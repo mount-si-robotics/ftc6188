@@ -30,7 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.firstinspires.ftc.ftc6188;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -43,11 +43,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
  *
- * This particular OpMode just executes a basic Tank Drive Teleop for a PushBot
+ * This particular OpMode just executes a basic Tank Drive Teleop for a PushuBot
  * It includes all the skeletal structure that all linear OpModes contain.
  *
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
 @Autonomous(name = "Autonomous")
@@ -58,7 +58,7 @@ public class AutonomousTestThomas extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
-    public final float GEARRATIO = 3;
+    public final float GEARRATIO = 1/3;
     // DcMotor leftMotor = null;
     // DcMotor rightMotor = null;
 
@@ -80,6 +80,10 @@ public class AutonomousTestThomas extends LinearOpMode {
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
+        resetEncoders();
+        checkEncoder();
+        runEncoders();
+
         /* eg: Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step (using the FTC Robot Controller app on the phone).
@@ -95,29 +99,42 @@ public class AutonomousTestThomas extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-        moveRobot(30,.1f);
+        moveRobot(54,.1f);
 
 
     }
 
     public void moveRobot(double distance, float speed)
     {
-        runEncoders();
-        resetEncoders();
-        checkEncoder();
-        double tTicks = distance / CIRCUMFENCE * ENCODERTICKS;
-        while(Math.abs(motorLeftFront.getCurrentPosition()) < tTicks) {
-            telemetry.addData("Status", "Running: " + runtime.toString());
-            telemetry.addData("tTicks",tTicks);
-            telemetry.addData("left front", motorLeftFront.getCurrentPosition());
 
-            runEncoders();
+        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int)(distance * ticksToInches);
+        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int)(distance * ticksToInches);
+        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int)(distance * ticksToInches);
+        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int)(distance * ticksToInches);
+
+        motorLeftBack.setTargetPosition(PositionTarget1);
+        motorRightFront.setTargetPosition(PositionTarget2);
+        motorRightBack.setTargetPosition(PositionTarget3);
+        motorLeftFront.setTargetPosition(PositionTarget4);
+        // Turn On RUN_TO_POSITION
+        SetEncoderPositionToRun();
             setMotorSpeed(speed);
+        while(MotorsBusy())
+        {
+            telemetry.addData("Path1",  "Running to %7d :%7d", distance);
+            telemetry.addData("Path2",  "Running at %7d :%7d",
+                    motorLeftFront.getCurrentPosition(),
+                    motorRightFront.getCurrentPosition());
+            telemetry.update();
         }
-        resetMotor();
-        resetEncoders();
+            setMotorSpeed(0);
+        runEncoders();
     }
-
+    public boolean MotorsBusy()
+    {
+        return motorLeftBack.isBusy() && motorLeftFront.isBusy() && motorRightBack.isBusy() && motorRightFront.isBusy();
+    }
     public void resetEncoders()
     {
         motorLeftFront.setMode
@@ -184,5 +201,20 @@ public class AutonomousTestThomas extends LinearOpMode {
     public void resetMotor()
     {
         setMotorSpeed(0);
+    }
+    public void SetEncoderPositionToRun()
+    {
+        motorLeftFront.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
+        motorRightFront.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
+        motorLeftBack.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
+        motorRightBack.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
     }
 }

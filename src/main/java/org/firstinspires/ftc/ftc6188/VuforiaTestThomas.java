@@ -1,28 +1,28 @@
 package org.firstinspires.ftc.ftc6188;
 
 
-        import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-        import com.vuforia.HINT;
-        import com.vuforia.Vuforia;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.vuforia.HINT;
+import com.vuforia.Vuforia;
 
-        import org.firstinspires.ftc.robotcore.external.ClassFactory;
-        import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-        import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-        import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-        import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-        import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-        import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-        import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-        import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-        import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /*
  * This OpMode was written for the VuforiaDemo Basics video. This demonstrates basic principles of
- * using VuforiaDemo in FTC.
+ * using VuforiaDemo in FTC. Easter Egg
  */
 @Autonomous(name = "VuforiaBue")
-class VuforiaTestThomas extends LinearOpMode
+public class VuforiaTestThomas extends LinearOpMode
 {
     // Variables to be used for later
     private VuforiaLocalizer vuforiaLocalizer;
@@ -34,7 +34,7 @@ class VuforiaTestThomas extends LinearOpMode
     private OpenGLMatrix lastKnownLocation;
     private OpenGLMatrix phoneLocation;
 
-    private static final String VUFORIA_KEY = "AROaHlv/////AAAAGeN/1ltdL0fxtlGichu4wk0vhD4JbDfwHOi4FcT9WWnEG7DdxbfOpRhMQakUaiQUWSzaSYP4/lMb5sQ6St4h753YKHWrxx8YqLYtBXyfY9DQJadD/OeDM8E/aSe8WgFem3eVb5zoB3A00vDqAmrpuEld7llxt2Buw2ZmCJXRukdYYWKNxPvNMDFAJ4RcAY3vSDvZeLIhVqx0uvmXXQskpUY9mYaoLd7T9qsX1Z3NDaAoe8ucqD1A1yBZL4hn6/YhROXtWaiVxAMqBZLPtKUONjoJwgrdYTeB2v9yPldyp3KmQnzKXvOa6rwszD5tVwO+vFKvlUqxnP3arAPOlw+NEDeJHrI1oGg1Zx5Wf+wc6c/c\"\n"; // Insert your own key here
+    private static final String VUFORIA_KEY = ""; // Insert your own key here
 
     private float robotX = 0;
     private float robotY = 0;
@@ -67,14 +67,10 @@ class VuforiaTestThomas extends LinearOpMode
             robotX = coordinates[0];
             robotY = coordinates[1];
             robotAngle = Orientation.getOrientation(lastKnownLocation, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-            double distance = Math.sqrt((robotX - 3581)*(robotX - 3581) + (robotY - 1410)*(robotY - 1410));
+
             // Send information about whether the target is visible, and where the robot is
-            //telemetry.addData("Tracking " + target.getName(), listener.isVisible());
-            //telemetry.addData("Last Known Location", formatMatrix(lastKnownLocation));
-            //telemetry.addData("Distance ","Distance: " + distance);
-            telemetry.addData("RobotX: ","RobotX: "+robotX);
-            telemetry.addData("RobotY: ","RobotY: "+robotY);
-            telemetry.addData("RobotZ: ","RobotZ: "+coordinates[2]);
+            telemetry.addData("Tracking " + target.getName(), listener.isVisible());
+            telemetry.addData("Last Known Location", formatMatrix(lastKnownLocation));
 
             // Send telemetry and idle to let hardware catch up
             telemetry.update();
@@ -85,7 +81,7 @@ class VuforiaTestThomas extends LinearOpMode
     private void setupVuforia()
     {
         // Setup parameters to create localizer
-        parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId); // To remove the camera view from the screen, remove the R.id.cameraMonitorViewId
+        parameters = null;/* new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId); */// To remove the camera view from the screen, remove the R.id.cameraMonitorViewId
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         parameters.useExtendedTracking = false;
@@ -99,10 +95,10 @@ class VuforiaTestThomas extends LinearOpMode
         // Setup the target to be tracked
         target = visionTargets.get(0); // 0 corresponds to the wheels target
         target.setName("Wheels Target");
-        target.setLocation(createMatrix(1790.5f, 0, 0, 90, 0, 0));
+        target.setLocation(createMatrix(0, 500, 0, 90, 0, 90));
 
         // Set phone location on robot
-        phoneLocation = createMatrix(0, 0, 0, 90, 0, 0);
+        phoneLocation = createMatrix(0, 225, 0, 90, 0, 0);
 
         // Setup listener and inform it of phone information
         listener = (VuforiaTrackableDefaultListener) target.getListener();

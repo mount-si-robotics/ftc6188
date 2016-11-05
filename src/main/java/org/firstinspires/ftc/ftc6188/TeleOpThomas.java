@@ -33,9 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.ftc6188;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -52,7 +51,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousTest(...) is the other common choice
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousTestThomas(...) is the other common choice
 //@Disabled
 public class TeleOpThomas extends OpMode
 {
@@ -104,12 +103,33 @@ public class TeleOpThomas extends OpMode
         float left;
         float right;
 
+        if(gamepad1.a)
+        {
+
+            motorRightBack.setDirection(DcMotor.Direction.FORWARD);
+            motorRightFront.setDirection(DcMotor.Direction.FORWARD);
+            motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
+            motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
+        }
+        else if(gamepad1.b)
+        {
+            motorRightBack.setDirection(DcMotor.Direction.REVERSE);
+            motorRightFront.setDirection(DcMotor.Direction.REVERSE);
+            motorLeftBack.setDirection(DcMotor.Direction.FORWARD);
+            motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
+
+        }
+
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
 
         right = Range.clip(right, -1, 1);
         left = Range.clip(left, -1, 1);
-
+        if(gamepad1.left_trigger > 0.25)
+        {
+            right/=4;
+            left/=4;
+        }
         right = (float)scaleInput(right);
         left =  (float)scaleInput(left);
 

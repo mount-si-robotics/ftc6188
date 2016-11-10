@@ -30,7 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.ftc6188;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -58,11 +58,7 @@ public class AutonomousTestThomas extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
-<<<<<<< HEAD
     public final float GEARRATIO = .5f;
-=======
-    public final float GEARRATIO = 1/3;
->>>>>>> 09126634bb073fa1e8c0f0cec33f8f69538c3fde
     // DcMotor leftMotor = null;
     // DcMotor rightMotor = null;
 
@@ -84,12 +80,9 @@ public class AutonomousTestThomas extends LinearOpMode {
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
-<<<<<<< HEAD
-=======
         resetEncoders();
         checkEncoder();
         runEncoders();
->>>>>>> 09126634bb073fa1e8c0f0cec33f8f69538c3fde
 
         /* eg: Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
@@ -106,25 +99,20 @@ public class AutonomousTestThomas extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-<<<<<<< HEAD
+
         sleep(10000);
         moveRobot(62,.6f);
-=======
-        moveRobot(54,.1f);
->>>>>>> 09126634bb073fa1e8c0f0cec33f8f69538c3fde
 
 
     }
 
-    public void moveRobot(double distance, float speed)
-    {
-<<<<<<< HEAD
+    public void moveRobot(double distance, float speed) {
 
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
-        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int)(distance * ticksToInches);
+        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
 
         motorLeftBack.setTargetPosition(PositionTarget1);
         motorRightFront.setTargetPosition(PositionTarget2);
@@ -132,16 +120,15 @@ public class AutonomousTestThomas extends LinearOpMode {
         motorLeftFront.setTargetPosition(PositionTarget4);
         // Turn On RUN_TO_POSITION
         SetEncoderPositionToRun();
-            setMotorSpeed(speed);
+        setMotorSpeed(speed);
 
-        while(motorLeftFront.isBusy())
-        {
+        while (motorLeftFront.isBusy()) {
             telemetry.addData("Path2",
                     motorLeftFront.getCurrentPosition());
 
             telemetry.update();
         }
-            setMotorSpeed(0);
+        setMotorSpeed(0);
         runEncoders();
         /*runEncoders();
         checkEncoder();
@@ -160,36 +147,10 @@ public class AutonomousTestThomas extends LinearOpMode {
         }
         resetMotor();
         resetEncoders();*/
-=======
-
-        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
-        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int)(distance * ticksToInches);
-        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int)(distance * ticksToInches);
-
-        motorLeftBack.setTargetPosition(PositionTarget1);
-        motorRightFront.setTargetPosition(PositionTarget2);
-        motorRightBack.setTargetPosition(PositionTarget3);
-        motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
-        SetEncoderPositionToRun();
-            setMotorSpeed(speed);
-        while(MotorsBusy())
-        {
-            telemetry.addData("Path1",  "Running to %7d :%7d", distance);
-            telemetry.addData("Path2",  "Running at %7d :%7d",
-                    motorLeftFront.getCurrentPosition(),
-                    motorRightFront.getCurrentPosition());
-            telemetry.update();
-        }
-            setMotorSpeed(0);
-        runEncoders();
     }
     public boolean MotorsBusy()
     {
         return motorLeftBack.isBusy() && motorLeftFront.isBusy() && motorRightBack.isBusy() && motorRightFront.isBusy();
->>>>>>> 09126634bb073fa1e8c0f0cec33f8f69538c3fde
     }
     public void resetEncoders()
     {

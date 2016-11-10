@@ -34,6 +34,7 @@ package org.firstinspires.ftc.ftc6188;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -61,6 +62,8 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorRightBack;
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
+
+    private Servo buttonPusher;
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -72,6 +75,9 @@ public class TeleOpThomas extends OpMode
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
 
+        buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
+
+        buttonPusher.setPosition(0);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightBack.setDirection(DcMotor.Direction.FORWARD);
@@ -120,6 +126,14 @@ public class TeleOpThomas extends OpMode
 
         }
 
+        if(gamepad1.y)
+        {
+            buttonPusher.setPosition(buttonPusher.getPosition() + .002f);
+        }
+        if(gamepad1.x)
+        {
+            buttonPusher.setPosition(buttonPusher.getPosition() - .002f);
+        }
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
 

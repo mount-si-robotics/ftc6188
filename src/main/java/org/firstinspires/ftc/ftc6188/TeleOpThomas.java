@@ -63,7 +63,13 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
 
+    private DcMotor LauncherMotor;
+
     private Servo buttonPusher;
+
+    private float LuaacherSpeed=0;
+    private float buttonPusherPosition = 0;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -74,6 +80,8 @@ public class TeleOpThomas extends OpMode
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
+
+        LauncherMotor = hardwareMap.dcMotor.get("LauncherMotor");
 
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
 
@@ -128,12 +136,25 @@ public class TeleOpThomas extends OpMode
 
         if(gamepad1.y)
         {
-            buttonPusher.setPosition(buttonPusher.getPosition() + .002f);
+            buttonPusherPosition+=.002f;
         }
         if(gamepad1.x)
         {
-            buttonPusher.setPosition(buttonPusher.getPosition() - .002f);
+
+            buttonPusherPosition-=.002f;
         }
+        Range.clip(buttonPusherPosition,0,1);
+        telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
+        buttonPusher.setPosition(buttonPusherPosition);
+        if(gamepad1.dpad_up)
+            LuaacherSpeed+=.05f;
+          else if(gamepad1.dpad_down && LuaacherSpeed >= 0)
+            LuaacherSpeed-=.05f;
+
+        telemetry.addData("laucncherspeeder ",LuaacherSpeed);
+        LauncherMotor.setPower(LuaacherSpeed);
+        telemetry.update();
+
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
 

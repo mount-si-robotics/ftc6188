@@ -63,12 +63,14 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
 
-    private DcMotor LauncherMotor;
+    private DcMotor launcherMotor;
 
     private Servo buttonPusher;
+    private Servo ballStopServo;
 
-    private float LuaacherSpeed=0;
+    private float launcherSpeed=0;
     private float buttonPusherPosition = 0;
+    private float ballStopServoPosition = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -81,39 +83,28 @@ public class TeleOpThomas extends OpMode
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
 
-        LauncherMotor = hardwareMap.dcMotor.get("LauncherMotor");
+        launcherMotor = hardwareMap.dcMotor.get("LauncherMotor");
 
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
+        ballStopServo = hardwareMap.servo.get("BallStopCRServo"); /*thing for stopping balls from going straight to launcher*/
 
         buttonPusher.setPosition(0);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightBack.setDirection(DcMotor.Direction.FORWARD);
         motorRightFront.setDirection(DcMotor.Direction.FORWARD);
+        ballStopServo.setPosition(0);
 
     }
 
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
      */
-    @Override
-    public void init_loop() {
-    }
-
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-        runtime.reset();
-    }
-
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
     @Override
     public void loop() {
-        telemetry.addData("Status", "Running: " + runtime.toString());
         float left;
         float right;
 
@@ -146,14 +137,24 @@ public class TeleOpThomas extends OpMode
         Range.clip(buttonPusherPosition,0,1);
         telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
         buttonPusher.setPosition(buttonPusherPosition);
-        if(gamepad1.dpad_up)
-            LuaacherSpeed+=.05f;
-          else if(gamepad1.dpad_down && LuaacherSpeed >= 0)
-            LuaacherSpeed-=.05f;
 
-        telemetry.addData("laucncherspeeder ",LuaacherSpeed);
-        LauncherMotor.setPower(LuaacherSpeed);
+        if(gamepad1.dpad_up)
+            launcherSpeed+=.05f;
+          else if(gamepad1.dpad_down && launcherSpeed >= 0)
+            launcherSpeed-=.05f;
+        telemetry.addData("launcherSpeed",launcherSpeed);
+        launcherMotor.setPower(launcherSpeed);
         telemetry.update();
+
+        if (gamepad1.right_bumper)
+            ballStopServoPosition = .4f;
+        else if (!gamepad1.right_bumper)
+            ballStopServoPosition = 0;
+
+
+        Range.clip(ballStopServoPosition, 0, 1);
+        telemetry.addData("ballStopServoPosition",ballStopServoPosition);
+        ballStopServo.setPosition(ballStopServoPosition);
 
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;

@@ -33,7 +33,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.ftc6188;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -52,7 +55,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousTestThomas(...) is the other common choice
+  // @AutonomousTestThomas(...) is the other common choice
 //@Disabled
 public class TeleOpThomas extends OpMode
 {
@@ -63,9 +66,13 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
 
-    private DcMotor LauncherMotor;
+    //private DcMotor LauncherMotor;
 
     private Servo buttonPusher;
+
+    private ColorSensor modernRobotics;
+    private OpticalDistanceSensor OpticalDistance;
+    private GyroSensor MrGyro;
 
     private float LuaacherSpeed=0;
     private float buttonPusherPosition = 0;
@@ -81,9 +88,13 @@ public class TeleOpThomas extends OpMode
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
 
-        LauncherMotor = hardwareMap.dcMotor.get("LauncherMotor");
+        //LauncherMotor = hardwareMap.dcMotor.get("LauncherMotor");
 
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
+
+        modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
+        OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
+        MrGyro = hardwareMap.gyroSensor.get("GSensor");
 
         buttonPusher.setPosition(0);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
@@ -143,7 +154,7 @@ public class TeleOpThomas extends OpMode
 
             buttonPusherPosition-=.002f;
         }
-        Range.clip(buttonPusherPosition,0,1);
+        /*Range.clip(buttonPusherPosition,0,1);
         telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
         buttonPusher.setPosition(buttonPusherPosition);
         if(gamepad1.dpad_up)
@@ -152,7 +163,7 @@ public class TeleOpThomas extends OpMode
             LuaacherSpeed-=.05f;
 
         telemetry.addData("laucncherspeeder ",LuaacherSpeed);
-        LauncherMotor.setPower(LuaacherSpeed);
+        auncherMotor.setPower(LuaacherSpeed);*/
         telemetry.update();
 
         left = -gamepad1.left_stick_y;

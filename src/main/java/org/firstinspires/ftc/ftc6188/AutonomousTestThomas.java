@@ -34,7 +34,11 @@ package org.firstinspires.ftc.ftc6188;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -59,6 +63,7 @@ public class AutonomousTestThomas extends LinearOpMode {
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
+
     // DcMotor leftMotor = null;
     // DcMotor rightMotor = null;
 
@@ -66,6 +71,12 @@ public class AutonomousTestThomas extends LinearOpMode {
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
+
+    private Servo buttonPusher;
+
+    private ColorSensor modernRobotics;
+    private OpticalDistanceSensor OpticalDistance;
+    private GyroSensor MrGyro;
 
     @Override
     public void runOpMode() {
@@ -80,28 +91,45 @@ public class AutonomousTestThomas extends LinearOpMode {
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
+        buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
+
+        modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
+        OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
+        MrGyro = hardwareMap.gyroSensor.get("GSensor");
+
+        buttonPusher.setPosition(0);
+
         resetEncoders();
         checkEncoder();
         runEncoders();
 
-        /* eg: Initialize the hardware variables. Note that the strings used here as parameters
-         * to 'get' must correspond to the names assigned during the robot configuration
-         * step (using the FTC Robot Controller app on the phone).
-         */
-        // leftMotor  = hardwareMap.dcMotor.get("left_drive");
-        // rightMotor = hardwareMap.dcMotor.get("right_drive");
-
-        // eg: Set the drive motor directions:
-        // "Reverse" the motor that runs backwards when connected directly to the battery
-        // leftMotor.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        // rightMotor.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        MrGyro.calibrate();
 
         // Wait for the game to start (driver presses PLAY)
+        //move to side
+        //search for white line
+        //search for what color is
+        //determine to drop buttonpusher now or later
+        /*
+
+        moveRobot(distance,speed);
+        searchForWhiteline(speed,light);
+        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
+        decide to moveRobot(); or buttonPusher.setPosition(position);
+        buttonPusher.setPosition(0);
+        moveRobot(distance,speed);
+        searchForWhiteline(speed,light);
+        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
+        decide to moveRobot(); or buttonPusher.setPosition(position);*/
+
+
+
         waitForStart();
         runtime.reset();
 
         sleep(10000);
         moveRobot(62,.6f);
+
 
 
     }
@@ -233,5 +261,101 @@ public class AutonomousTestThomas extends LinearOpMode {
         motorRightBack.setMode
                 (DcMotor.RunMode.RUN_TO_POSITION
                 );
+    }
+    /*public boolean CheckBeaconForBlue(float red, float green, float blue, float speed)
+    {
+
+        return modernRobotics.red() < modernRobotics.blue();
+
+    }*/
+    /*public boolean CheckBeaconForRed(float red, float green, float blue, float speed)
+    {
+
+        return modernRobotics.blue() < modernRobotics.red();
+
+    }*/
+   /* public void searchForWhiteline(float speed,float light)
+    {
+        setMotorSpeed(speed);
+        while(OpticalDistance.getLightDetected() < light)
+        {
+            telemetry.addData("light returned", OpticalDistance.getLightDetected());
+        }
+        telemetry.update();
+        setMotorSpeed(0);
+    }*/
+
+    public void turn(int degrees, float maxSpeed, float minimumTurnSpeed)
+    {
+        float speed = 0.0f;
+        float precision = 0.1f;
+        boolean leftTurn = false;
+        boolean rightTurn = false;
+        int newGyro = MrGyro.getHeading();
+        float degrees_needed = Math.abs(degrees - newGyro);
+        float numeratorSpeed;
+        if(degrees_needed > 180 && newGyro < 180) {
+            leftTurn = true;
+            degrees_needed = Math.abs(degrees_needed - 360);
+        }
+        else if(degrees_needed > 180) {
+            rightTurn = true;
+            degrees_needed = Math.abs(degrees_needed - 360);
+        }
+
+        while (newGyro !=degrees && runtime.time() < 29.5f) {
+            newGyro = MrGyro.getHeading();
+
+            if(leftTurn && newGyro < 180) {
+                numeratorSpeed = Math.abs(degrees - newGyro - 360);
+                newGyro += 360;
+            }
+            else if(rightTurn && newGyro > 180)
+            {
+                numeratorSpeed = Math.abs(degrees - newGyro + 360);
+                newGyro -= 360;
+            }
+            else
+                numeratorSpeed = Math.abs(degrees - newGyro);
+
+            speed = maxSpeed * (numeratorSpeed / degrees_needed);
+
+            if (speed > 1.0)
+                speed = 1.0f;
+            if (speed < minimumTurnSpeed)
+                speed = minimumTurnSpeed;
+            telemetry.addData("4. h", newGyro);
+            telemetry.addData("speed", speed);
+            telemetry.update();
+            if (newGyro > degrees + precision && newGyro < degrees - precision) {
+                resetMotor();
+                break;
+            } else if (newGyro < degrees) {
+                // turn right
+                turnRight(speed);
+            } else {
+                // turn left
+                turnLeft(speed);
+            }
+
+        }
+
+    }
+    public void turnLeft(float speed)
+    {
+        stopEncoders();
+        motorLeftFront.setPower(-speed);
+        motorRightBack.setPower(speed);
+        motorRightFront.setPower(speed);
+        motorLeftBack.setPower(-speed);
+    }
+    //turns robot right
+    public void turnRight(float speed)
+    {
+        stopEncoders();
+        motorLeftFront.setPower(speed);
+        motorRightBack.setPower(-speed);
+        motorRightFront.setPower(-speed);
+        motorLeftBack.setPower(speed);
     }
 }

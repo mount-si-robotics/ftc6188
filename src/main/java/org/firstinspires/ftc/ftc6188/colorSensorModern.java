@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.view.View;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
@@ -20,6 +21,7 @@ import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 public class colorSensorModern extends LinearOpMode{
     private ColorSensor modernRobotics;
     private GyroSensor gyroTest;
+    private ModernRoboticsI2cGyro mrGyro;
    // private UltrasonicSensor ultra;
     //private LegacyModule legacy;
     private OpticalDistanceSensor ODSensor;
@@ -34,6 +36,7 @@ public class colorSensorModern extends LinearOpMode{
         //gives the sensors a name in the config
         modernRobotics = hardwareMap.colorSensor.get("mr");
         gyroTest = hardwareMap.gyroSensor.get("gyro");
+        mrGyro = (ModernRoboticsI2cGyro) gyroTest;
         //ultra = hardwareMap.ultrasonicSensor.get("ultra");
         //legacy = hardwareMap.legacyModule.get("legacy");
         ODSensor = hardwareMap.opticalDistanceSensor.get("ODSensor");
@@ -57,6 +60,7 @@ public class colorSensorModern extends LinearOpMode{
             telemetry.addData("Hue", hsvValues[0]);
             telemetry.addData("sat", hsvValues[1]);
             telemetry.addData("value", hsvValues[2]);
+            telemetry.addData("intergratedZValue", mrGyro.getIntegratedZValue());
             telemetry.addData("4. h", gyroTest.getHeading());
             //telemetry.addData("distance", ultra.getUltrasonicLevel());
             telemetry.addData("Light Back ", ODSensor.getLightDetected());

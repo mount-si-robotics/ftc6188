@@ -32,6 +32,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.ftc6188;
 
+import android.graphics.Color;
+
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -54,9 +57,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "Autonomous")
+@Autonomous(name = "AutonomousRed")
 //@Disabled
-public class AutonomousTestThomas extends LinearOpMode {
+public class AutonomousBlue extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -64,8 +67,6 @@ public class AutonomousTestThomas extends LinearOpMode {
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
 
-    // DcMotor leftMotor = null;
-    // DcMotor rightMotor = null;
 
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
@@ -76,7 +77,8 @@ public class AutonomousTestThomas extends LinearOpMode {
 
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
-    private GyroSensor MrGyro;
+    private GyroSensor sensorType;
+    private ModernRoboticsI2cGyro MrGyro;
 
     @Override
     public void runOpMode() {
@@ -95,7 +97,11 @@ public class AutonomousTestThomas extends LinearOpMode {
 
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
-        MrGyro = hardwareMap.gyroSensor.get("GSensor");
+        sensorType = hardwareMap.gyroSensor.get("GSensor");
+
+        MrGyro = (ModernRoboticsI2cGyro) sensorType;
+
+
 
         buttonPusher.setPosition(0);
 
@@ -104,15 +110,12 @@ public class AutonomousTestThomas extends LinearOpMode {
         runEncoders();
 
         MrGyro.calibrate();
+        while(MrGyro.isCalibrating())
+        {
 
-        // Wait for the game to start (driver presses PLAY)
-        //move to side
-        //search for white line
-        //search for what color is
-        //determine to drop buttonpusher now or later
-        /*
+        }
 
-        moveRobot(distance,speed);
+        /*moveRobot(distance,speed);
         searchForWhiteline(speed,light);
         either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
         decide to moveRobot(); or buttonPusher.setPosition(position);
@@ -126,16 +129,59 @@ public class AutonomousTestThomas extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+        /*turn(-45,.35f,true);
+        sleep(5000);*/
+        /*moveRobot(-50,.4f);
+        turn(-45,.3f,true);
+        CheckBeaconForBlue(-.15f,4);
+        buttonPusher.setPosition(.4);
+        sleep(500);
+        setMotorSpeed(-.05f);
+        sleep(5000);
+        setMotorSpeed(0);*/
 
         sleep(10000);
         moveRobot(62,.6f);
+
+        //sleep(10000);
+        //moveRobot2(62,.6f,0);
 
 
 
     }
 
     public void moveRobot(double distance, float speed) {
+        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
 
+        motorLeftBack.setTargetPosition(PositionTarget1);
+        motorRightFront.setTargetPosition(PositionTarget2);
+        motorRightBack.setTargetPosition(PositionTarget3);
+        motorLeftFront.setTargetPosition(PositionTarget4);
+        // Turn On RUN_TO_POSITION
+        SetEncoderPositionToRun();
+        setMotorSpeed(speed);
+        int z = MrGyro.getIntegratedZValue();
+        while (motorLeftFront.isBusy()) {
+            telemetry.addData("angle",
+                    MrGyro.getHeading());
+
+            telemetry.update();
+        }
+        setMotorSpeed(0);
+        runEncoders();
+    }
+    public void moveRobot2(double distance, float speed) {
+        int targetAngle = MrGyro.getIntegratedZValue();
+        int headingerror;
+        int currentheading;
+        float driveConstant= .003f;
+        float midPower = speed;
+        float drivesteering;
+        float leftPower,rightPower;
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
         int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
         int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
@@ -151,30 +197,37 @@ public class AutonomousTestThomas extends LinearOpMode {
         setMotorSpeed(speed);
 
         while (motorLeftFront.isBusy()) {
-            telemetry.addData("Path2",
-                    motorLeftFront.getCurrentPosition());
 
+            currentheading = MrGyro.getIntegratedZValue();
+
+            headingerror = targetAngle - currentheading;
+            drivesteering = headingerror * driveConstant;
+            leftPower = midPower + drivesteering;
+            if(leftPower > 1)
+                leftPower = 1;
+            if(leftPower < 0)
+                leftPower = 0;
+            rightPower = midPower - drivesteering;
+            if(rightPower > 1)
+                rightPower = 1;
+            if(rightPower < 0)
+                rightPower = 0;
+            motorLeftBack.setPower(leftPower);
+            motorLeftFront.setPower(leftPower);
+            motorRightBack.setPower(rightPower);
+            motorRightFront.setPower(rightPower);
+            telemetry.addData("leftPower",
+                    leftPower);
+            telemetry.addData("rightPower",
+                    rightPower);
+            telemetry.addData("drivestering",
+                    drivesteering);
+            telemetry.addData("angle",
+                    currentheading);
             telemetry.update();
         }
         setMotorSpeed(0);
         runEncoders();
-        /*runEncoders();
-        checkEncoder();
-        runEncoders();
-        double tTicks = (distance / (CIRCUMFENCE / ENCODERTICKS));
-        while(Math.abs(motorLeftFront.getCurrentPosition()) < tTicks) {
-
-
-            telemetry.addData("left front", motorLeftFront.getCurrentPosition());
-            telemetry.addData("right front", motorLeftFront.getCurrentPosition());
-            telemetry.addData("left back", motorLeftBack.getCurrentPosition());
-            telemetry.addData("right back", motorRightBack.getCurrentPosition());
-            runEncoders();
-            setMotorSpeed(speed);
-            telemetry.update();
-        }
-        resetMotor();
-        resetEncoders();*/
     }
     public boolean MotorsBusy()
     {
@@ -243,10 +296,6 @@ public class AutonomousTestThomas extends LinearOpMode {
             resetEncoders();
 
     }
-    public void resetMotor()
-    {
-        setMotorSpeed(0);
-    }
     public void SetEncoderPositionToRun()
     {
         motorLeftFront.setMode
@@ -262,88 +311,70 @@ public class AutonomousTestThomas extends LinearOpMode {
                 (DcMotor.RunMode.RUN_TO_POSITION
                 );
     }
-    /*public boolean CheckBeaconForBlue(float red, float green, float blue, float speed)
+    public void CheckBeaconForBlue( float speed, float waitTime)
     {
-
-        return modernRobotics.red() < modernRobotics.blue();
-
-    }*/
-    /*public boolean CheckBeaconForRed(float red, float green, float blue, float speed)
-    {
-
-        return modernRobotics.blue() < modernRobotics.red();
-
-    }*/
-   /* public void searchForWhiteline(float speed,float light)
-    {
+        float hsvValues[] = {0F,0F,0F};
+        double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(OpticalDistance.getLightDetected() < light)
+        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        while(hsvValues[0]<150 && runtime.time() < startTime+waitTime)
         {
-            telemetry.addData("light returned", OpticalDistance.getLightDetected());
-        }
-        telemetry.update();
-        setMotorSpeed(0);
-    }*/
-
-    public void turn(int degrees, float maxSpeed, float minimumTurnSpeed)
-    {
-        float speed = 0.0f;
-        float precision = 0.1f;
-        boolean leftTurn = false;
-        boolean rightTurn = false;
-        int newGyro = MrGyro.getHeading();
-        float degrees_needed = Math.abs(degrees - newGyro);
-        float numeratorSpeed;
-        if(degrees_needed > 180 && newGyro < 180) {
-            leftTurn = true;
-            degrees_needed = Math.abs(degrees_needed - 360);
-        }
-        else if(degrees_needed > 180) {
-            rightTurn = true;
-            degrees_needed = Math.abs(degrees_needed - 360);
-        }
-
-        while (newGyro !=degrees && runtime.time() < 29.5f) {
-            newGyro = MrGyro.getHeading();
-
-            if(leftTurn && newGyro < 180) {
-                numeratorSpeed = Math.abs(degrees - newGyro - 360);
-                newGyro += 360;
-            }
-            else if(rightTurn && newGyro > 180)
-            {
-                numeratorSpeed = Math.abs(degrees - newGyro + 360);
-                newGyro -= 360;
-            }
-            else
-                numeratorSpeed = Math.abs(degrees - newGyro);
-
-            speed = maxSpeed * (numeratorSpeed / degrees_needed);
-
-            if (speed > 1.0)
-                speed = 1.0f;
-            if (speed < minimumTurnSpeed)
-                speed = minimumTurnSpeed;
-            telemetry.addData("4. h", newGyro);
-            telemetry.addData("speed", speed);
+            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            telemetry.addData("Hue", hsvValues[0]);
+            telemetry.addData("startTime", startTime);
+            telemetry.addData("timer", runtime.time());
             telemetry.update();
-            if (newGyro > degrees + precision && newGyro < degrees - precision) {
-                resetMotor();
-                break;
-            } else if (newGyro < degrees) {
-                // turn right
-                turnRight(speed);
-            } else {
-                // turn left
-                turnLeft(speed);
-            }
-
         }
+        setMotorSpeed(0);
 
     }
+    public void CheckBeaconForRed( float speed, float waitTime)
+    {
+        float hsvValues[] = {0F,0F,0F};
+        double startTime = runtime.time();
+        setMotorSpeed(speed);
+        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
+        {
+            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            telemetry.addData("Hue", hsvValues[0]);
+            telemetry.addData("startTime", startTime);
+            telemetry.addData("timer", runtime.time());
+            telemetry.update();
+        }
+        setMotorSpeed(0);
+
+    }
+    public void turnBOR(int degres,float speed){turn(degres + MrGyro.getIntegratedZValue(),speed);}
+    public void turn(int degrees, float speed) {
+        int currentheading = MrGyro.getIntegratedZValue();
+        int tollerance = 1;
+        double startTime = runtime.time();
+        int degreesToTravel = MrGyro.getIntegratedZValue() - degrees;
+
+        while(Math.abs(MrGyro.getIntegratedZValue() - degrees) > tollerance && runtime.time() < startTime +4) {
+
+            if(Math.abs(degrees - currentheading) <25)
+                speed  = .07f;
+            telemetry.addData("degreesToTravel",degreesToTravel);
+            telemetry.addData("current degree", currentheading);
+            telemetry.addData("heading",MrGyro.getHeading());
+            telemetry.addData("speed", speed);
+            telemetry.update();
+            if(currentheading < degrees)
+                turnLeft(speed);
+            else
+                turnRight(speed);
+        }
+        setMotorSpeed(0);
+    }
+
+
+
+
     public void turnLeft(float speed)
     {
-        stopEncoders();
+
         motorLeftFront.setPower(-speed);
         motorRightBack.setPower(speed);
         motorRightFront.setPower(speed);
@@ -352,7 +383,7 @@ public class AutonomousTestThomas extends LinearOpMode {
     //turns robot right
     public void turnRight(float speed)
     {
-        stopEncoders();
+
         motorLeftFront.setPower(speed);
         motorRightBack.setPower(-speed);
         motorRightFront.setPower(-speed);

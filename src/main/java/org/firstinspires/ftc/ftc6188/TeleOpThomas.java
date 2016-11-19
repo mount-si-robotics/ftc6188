@@ -55,7 +55,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousTestThomas(...) is the other common choice
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousBlue(...) is the other common choice
 //@Disabled
 public class TeleOpThomas extends OpMode
 {
@@ -145,19 +145,19 @@ public class TeleOpThomas extends OpMode
 
         }
 
-        if(gamepad1.y)
+        if(gamepad1.right_trigger > 0.25)
         {
-            buttonPusherPosition+=.002f;
+            buttonPusherPosition+=.004f;
         }
-        if(gamepad1.x)
+        if(gamepad1.right_bumper)
         {
 
-            buttonPusherPosition-=.002f;
+            buttonPusherPosition-=.004f;
         }
-        /*Range.clip(buttonPusherPosition,0,1);
+        Range.clip(buttonPusherPosition,0,1);
         telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
         buttonPusher.setPosition(buttonPusherPosition);
-        if(gamepad1.dpad_up)
+        /*if(gamepad1.dpad_up)
             LuaacherSpeed+=.05f;
           else if(gamepad1.dpad_down && LuaacherSpeed >= 0)
             LuaacherSpeed-=.05f;
@@ -171,13 +171,15 @@ public class TeleOpThomas extends OpMode
 
         right = Range.clip(right, -1, 1);
         left = Range.clip(left, -1, 1);
+
+        right = (float)scaleInput(right);
+        left =  (float)scaleInput(left);
+
         if(gamepad1.left_trigger > 0.25)
         {
             right/=4;
             left/=4;
         }
-        right = (float)scaleInput(right);
-        left =  (float)scaleInput(left);
 
         motorRightFront.setPower(right);
         motorLeftFront.setPower(left);

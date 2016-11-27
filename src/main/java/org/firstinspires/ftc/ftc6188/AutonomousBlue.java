@@ -151,7 +151,7 @@ public class AutonomousBlue extends LinearOpMode {
         searchForWhiteLine(.1f);
         moveRobot2(10,.2f,0);
 
-        CheckBeaconForBlue(-.1f,5);
+        CheckBeaconForBlue(-.1f,3);
 
 
 
@@ -379,6 +379,7 @@ public class AutonomousBlue extends LinearOpMode {
     }
     public void CheckBeaconForBlue( float speed, float waitTime)
     {
+        sleep(200);
         float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
         setMotorSpeed(speed);

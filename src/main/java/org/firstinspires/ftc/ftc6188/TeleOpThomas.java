@@ -70,15 +70,13 @@ public class TeleOpThomas extends OpMode
 
     private Servo buttonPusher;
 
-<<<<<<< HEAD
+
     private float launcherSpeed = 0;
-=======
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor MrGyro;
 
     private float LuaacherSpeed=0;
->>>>>>> 4c9131ff1afa92049292f42fe3295c45e6dee3e5
     private float buttonPusherPosition = 0;
 
     /*

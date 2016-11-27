@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.ftc6188;
 
 import android.graphics.Color;
+import android.graphics.Path;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -140,11 +141,22 @@ public class AutonomousRed extends LinearOpMode {
         sleep(5000);
         setMotorSpeed(0);*/
 
-        sleep(10000);
-        moveRobot(62,.6f);
+        //sleep(10000);
+        //moveRobot(62,.6f);
 
         //sleep(10000);
-        //moveRobot2(62,.6f);
+        moveRobot2(12,.2f);
+        turnUsingRightMotors(-45,.2f);
+        moveRobot2(60,.2f,-35);
+        turnUsingLeftMotors(0,.2f,0);
+        CheckBeaconForRed(-.2f,5);
+
+
+
+        //buttonPusher.setPosition(.4);
+       // moveRobot(15,.2f);
+
+
 
 
 
@@ -164,7 +176,6 @@ public class AutonomousRed extends LinearOpMode {
         // Turn On RUN_TO_POSITION
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
-        int z = MrGyro.getIntegratedZValue();
         while (motorLeftFront.isBusy()) {
             telemetry.addData("angle",
                     MrGyro.getHeading());
@@ -175,7 +186,10 @@ public class AutonomousRed extends LinearOpMode {
         runEncoders();
     }
     public void moveRobot2(double distance, float speed) {
-        int targetAngle = MrGyro.getIntegratedZValue();
+        sleep(100);
+        int targetAngle = -MrGyro.getIntegratedZValue();
+        double startTime = runtime.time();
+
         int headingerror;
         int currentheading;
         float driveConstant= .003f;
@@ -196,9 +210,66 @@ public class AutonomousRed extends LinearOpMode {
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
-        while (motorLeftFront.isBusy()) {
+        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
 
-            currentheading = MrGyro.getIntegratedZValue();
+            currentheading = -MrGyro.getIntegratedZValue();
+
+            headingerror = targetAngle - currentheading;
+            drivesteering = headingerror * driveConstant;
+            leftPower = midPower + drivesteering;
+            if(leftPower > 1)
+                leftPower = 1;
+            if(leftPower < 0)
+                leftPower = 0;
+            rightPower = midPower - drivesteering;
+            if(rightPower > 1)
+                rightPower = 1;
+            if(rightPower < 0)
+                rightPower = 0;
+            motorLeftBack.setPower(leftPower);
+            motorLeftFront.setPower(leftPower);
+            motorRightBack.setPower(rightPower);
+            motorRightFront.setPower(rightPower);
+            telemetry.addData("leftPower",
+                    leftPower);
+            telemetry.addData("rightPower",
+                    rightPower);
+            telemetry.addData("drivestering",
+                    drivesteering);
+            telemetry.addData("angle",
+                    currentheading);
+            telemetry.update();
+        }
+        setMotorSpeed(0);
+        runEncoders();
+    }
+    public void moveRobot2(double distance, float speed, int targetAngle) {
+        sleep(100);
+        double startTime = runtime.time();
+
+        int headingerror;
+        int currentheading;
+        float driveConstant= .003f;
+        float midPower = speed;
+        float drivesteering;
+        float leftPower,rightPower;
+        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
+
+        motorLeftBack.setTargetPosition(PositionTarget1);
+        motorRightFront.setTargetPosition(PositionTarget2);
+        motorRightBack.setTargetPosition(PositionTarget3);
+        motorLeftFront.setTargetPosition(PositionTarget4);
+        // Turn On RUN_TO_POSITION
+        SetEncoderPositionToRun();
+        setMotorSpeed(speed);
+
+        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
+
+            currentheading = -MrGyro.getIntegratedZValue();
 
             headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
@@ -328,6 +399,22 @@ public class AutonomousRed extends LinearOpMode {
         setMotorSpeed(0);
 
     }
+    public void CheckRedColor()
+    {
+        float hsvValues[] = {0F,0F,0F};
+        double startTime = runtime.time();
+        boolean isRed = false;
+        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            if(hsvValues[0] < 20)
+                isRed = true;
+
+        telemetry.addData("isRed",isRed);
+        telemetry.update();
+       sleep(2000);
+
+
+    }
     public void CheckBeaconForRed( float speed, float waitTime)
     {
         float hsvValues[] = {0F,0F,0F};
@@ -345,30 +432,94 @@ public class AutonomousRed extends LinearOpMode {
         setMotorSpeed(0);
 
     }
-    public void turnBOR(int degres,float speed){turn(degres + MrGyro.getIntegratedZValue(),speed);}
+    public void turnBOR(int degres,float speed){turn(degres - MrGyro.getIntegratedZValue(),speed);}
     public void turn(int degrees, float speed) {
-        int currentheading = MrGyro.getIntegratedZValue();
+        int currentheading = -MrGyro.getIntegratedZValue();
         int tollerance = 1;
         double startTime = runtime.time();
-        int degreesToTravel = MrGyro.getIntegratedZValue() - degrees;
 
-        while(Math.abs(MrGyro.getIntegratedZValue() - degrees) > tollerance && runtime.time() < startTime +4) {
-
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +6) {
+            currentheading = -MrGyro.getIntegratedZValue();
             if(Math.abs(degrees - currentheading) <25)
                 speed  = .07f;
-            telemetry.addData("degreesToTravel",degreesToTravel);
-            telemetry.addData("current degree", currentheading);
-            telemetry.addData("heading",MrGyro.getHeading());
+            telemetry.addData("check",Math.abs(currentheading - degrees));
+            telemetry.addData("current heading", currentheading);
+            telemetry.addData("degrees",degrees);
             telemetry.addData("speed", speed);
             telemetry.update();
             if(currentheading < degrees)
-                turnLeft(speed);
-            else
                 turnRight(speed);
+            else
+                turnLeft(speed);
         }
         setMotorSpeed(0);
     }
+    public void turnUsingLeftMotors(int degrees, float speed, float tollerance) {
+        int currentheading = -MrGyro.getIntegratedZValue();
+        double startTime = runtime.time();
 
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
+            currentheading = -MrGyro.getIntegratedZValue();
+            if(Math.abs(degrees - currentheading) <25)
+                speed  = .07f;
+            telemetry.addData("check",Math.abs(currentheading - degrees));
+            telemetry.addData("current heading", currentheading);
+            telemetry.addData("degrees",degrees);
+            telemetry.addData("speed", speed);
+            telemetry.update();
+            if(currentheading < degrees)
+            {
+                motorLeftFront.setPower(speed);
+                motorLeftBack.setPower(speed);
+            }
+            else
+            {
+                motorLeftFront.setPower(-speed);
+                motorLeftBack.setPower(-speed);
+            }
+
+        }
+        setMotorSpeed(0);
+    }
+    public void turnUsingRightMotors(int degrees, float speed) {
+        int currentheading = -MrGyro.getIntegratedZValue();
+        int tollerance = 1;
+        double startTime = runtime.time();
+
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
+            currentheading = -MrGyro.getIntegratedZValue();
+            if(Math.abs(degrees - currentheading) <25)
+                speed  = .07f;
+            telemetry.addData("check",Math.abs(currentheading - degrees));
+            telemetry.addData("current heading", currentheading);
+            telemetry.addData("degrees",degrees);
+            telemetry.addData("speed", speed);
+            telemetry.update();
+            if(currentheading < degrees)
+            {
+                motorRightFront.setPower(-speed);
+                motorRightBack.setPower(-speed);
+            }
+            else
+            {
+                motorRightFront.setPower(speed);
+                motorRightBack.setPower(speed);
+            }
+
+        }
+        setMotorSpeed(0);
+    }
+    public void searchForWhiteLine(float speed)
+    {
+        double startTime = runtime.time();
+        setMotorSpeed(speed);
+        while(OpticalDistance.getRawLightDetected() < .3
+                && runtime.time() < startTime +4)
+        {
+            telemetry.addData("lightBack", OpticalDistance.getRawLightDetected());
+        }
+        setMotorSpeed(0);
+    }
 
 
 

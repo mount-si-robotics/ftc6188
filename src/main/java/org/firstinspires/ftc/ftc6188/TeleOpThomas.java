@@ -68,7 +68,7 @@ public class TeleOpThomas extends OpMode
     private Servo buttonPusher;
     private Servo ballStopServo;
 
-    private float launcherSpeed=0;
+    private float launcherSpeed = 0;
     private float buttonPusherPosition = 0;
     private float ballStopServoPosition = 0;
 

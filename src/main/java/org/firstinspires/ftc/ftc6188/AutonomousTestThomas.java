@@ -130,28 +130,8 @@ public class AutonomousTestThomas extends LinearOpMode {
         }
         setMotorSpeed(0);
         runEncoders();
-        /*runEncoders();
-        checkEncoder();
-        runEncoders();
-        double tTicks = (distance / (CIRCUMFENCE / ENCODERTICKS));
-        while(Math.abs(motorLeftFront.getCurrentPosition()) < tTicks) {
-
-
-            telemetry.addData("left front", motorLeftFront.getCurrentPosition());
-            telemetry.addData("right front", motorLeftFront.getCurrentPosition());
-            telemetry.addData("left back", motorLeftBack.getCurrentPosition());
-            telemetry.addData("right back", motorRightBack.getCurrentPosition());
-            runEncoders();
-            setMotorSpeed(speed);
-            telemetry.update();
-        }
-        resetMotor();
-        resetEncoders();*/
     }
-    public boolean MotorsBusy()
-    {
-        return motorLeftBack.isBusy() && motorLeftFront.isBusy() && motorRightBack.isBusy() && motorRightFront.isBusy();
-    }
+
     public void resetEncoders()
     {
         motorLeftFront.setMode

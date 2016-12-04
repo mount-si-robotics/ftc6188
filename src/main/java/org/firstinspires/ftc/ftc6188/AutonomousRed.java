@@ -149,6 +149,8 @@ public class AutonomousRed extends LinearOpMode {
         turnUsingRightMotors(-45,.2f);
         moveRobot2(60,.2f,-35);
         turnUsingLeftMotors(0,.2f,0);
+        setMotorSpeed(.2f);
+        sleep(750);
         CheckBeaconForRed(-.2f,5);
 
 

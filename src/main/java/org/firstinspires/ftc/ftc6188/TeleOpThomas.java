@@ -56,32 +56,21 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOP", group="Iterative Opmode")  // @AutonomousBlue(...) is the other common choice
-//@Disabled
 public class TeleOpThomas extends OpMode
 {
-    /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
-
-    //private DcMotor LauncherMotor;
-
     private Servo buttonPusher;
-
-
-    private float launcherSpeed = 0;
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor MrGyro;
 
-    private float LuaacherSpeed=0;
     private float buttonPusherPosition = 0;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
@@ -89,11 +78,7 @@ public class TeleOpThomas extends OpMode
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
-
-        //LauncherMotor = hardwareMap.dcMotor.get("LauncherMotor");
-
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
-
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         MrGyro = hardwareMap.gyroSensor.get("GSensor");
@@ -103,27 +88,17 @@ public class TeleOpThomas extends OpMode
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightBack.setDirection(DcMotor.Direction.FORWARD);
         motorRightFront.setDirection(DcMotor.Direction.FORWARD);
-
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
     @Override
     public void init_loop() {
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
     @Override
     public void start() {
         runtime.reset();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
     @Override
     public void loop() {
         telemetry.addData("Status", "Running: " + runtime.toString());
@@ -132,7 +107,6 @@ public class TeleOpThomas extends OpMode
 
         if(gamepad1.a)
         {
-
             motorRightBack.setDirection(DcMotor.Direction.FORWARD);
             motorRightFront.setDirection(DcMotor.Direction.FORWARD);
             motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
@@ -144,28 +118,19 @@ public class TeleOpThomas extends OpMode
             motorRightFront.setDirection(DcMotor.Direction.REVERSE);
             motorLeftBack.setDirection(DcMotor.Direction.FORWARD);
             motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-
         }
-
         if(gamepad1.right_trigger > 0.25)
         {
             buttonPusherPosition+=.004f;
         }
         if(gamepad1.right_bumper)
         {
-
             buttonPusherPosition-=.004f;
         }
         Range.clip(buttonPusherPosition,0,1);
         telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
         buttonPusher.setPosition(buttonPusherPosition);
-        /*if(gamepad1.dpad_up)
-            LuaacherSpeed+=.05f;
-          else if(gamepad1.dpad_down && LuaacherSpeed >= 0)
-            LuaacherSpeed-=.05f;
 
-        telemetry.addData("laucncherspeeder ",LuaacherSpeed);
-        auncherMotor.setPower(LuaacherSpeed);*/
         telemetry.update();
 
         left = -gamepad1.left_stick_y;
@@ -182,48 +147,30 @@ public class TeleOpThomas extends OpMode
             right/=4;
             left/=4;
         }
-
         motorRightFront.setPower(right);
         motorLeftFront.setPower(left);
         motorRightBack.setPower(right);
         motorLeftBack.setPower(left);
-
     }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
     @Override
     public void stop() {
     }
-
     double scaleInput(double dVal)  {
         double[] scaleArray = { 0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
                 0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00 };
-
-        // get the corresponding index for the scaleInput array.
         int index = (int) (dVal * 16.0);
-
-        // index should be positive.
         if (index < 0) {
             index = -index;
         }
-
-        // index cannot exceed size of array minus 1.
         if (index > 16) {
             index = 16;
         }
-
-        // get value from the array.
         double dScale = 0.0;
         if (dVal < 0) {
             dScale = -scaleArray[index];
         } else {
             dScale = scaleArray[index];
         }
-
-        // return scaled value.
         return dScale;
     }
-
 }

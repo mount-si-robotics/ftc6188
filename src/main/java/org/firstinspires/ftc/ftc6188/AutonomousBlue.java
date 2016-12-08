@@ -58,23 +58,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name = "AutonomousBlue")
-//@Disabled
 public class AutonomousBlue extends LinearOpMode {
 
-    /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
 
-
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
-
     private Servo buttonPusher;
-
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor sensorType;
@@ -101,8 +96,6 @@ public class AutonomousBlue extends LinearOpMode {
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
 
-
-
         buttonPusher.setPosition(0);
 
         resetEncoders();
@@ -112,38 +105,10 @@ public class AutonomousBlue extends LinearOpMode {
         MrGyro.calibrate();
         while(MrGyro.isCalibrating())
         {
-
         }
-
-        /*moveRobot(distance,speed);
-        searchForWhiteline(speed,light);
-        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
-        decide to moveRobot(); or buttonPusher.setPosition(position);
-        buttonPusher.setPosition(0);
-        moveRobot(distance,speed);
-        searchForWhiteline(speed,light);
-        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
-        decide to moveRobot(); or buttonPusher.setPosition(position);*/
-
-
-
         waitForStart();
         runtime.reset();
-        /*turn(-45,.35f,true);
-        sleep(5000);*/
-        /*moveRobot(-50,.4f);
-        turn(-45,.3f,true);
-        CheckBeaconForBlue(-.15f,4);
-        buttonPusher.setPosition(.4);
-        sleep(500);
-        setMotorSpeed(-.05f);
-        sleep(5000);
-        setMotorSpeed(0);*/
 
-        //sleep(10000);
-        //moveRobot(62,.6f);
-
-        //sleep(10000);
         moveRobot2(-12,.2f);
         turnUsingRightMotors(45,.15f);
         moveRobot2(-60,.2f);
@@ -152,11 +117,7 @@ public class AutonomousBlue extends LinearOpMode {
         moveRobot2(10,.2f,0);
 
         CheckBeaconForBlue(-.1f,3);
-
-
-
     }
-
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
         int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
@@ -168,7 +129,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
         while (motorLeftFront.isBusy()) {
@@ -201,14 +162,13 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
         while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
 
             currentheading = -MrGyro.getIntegratedZValue();
-
             headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
             leftPower = midPower - drivesteering;
@@ -258,7 +218,6 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
@@ -314,7 +273,6 @@ public class AutonomousBlue extends LinearOpMode {
                 (DcMotor.RunMode.STOP_AND_RESET_ENCODER
                 );
     }
-    //turn off the encoders
     public void stopEncoders()
     {
         motorLeftFront.setMode
@@ -330,7 +288,6 @@ public class AutonomousBlue extends LinearOpMode {
                 (DcMotor.RunMode.RUN_WITHOUT_ENCODER
                 );
     }
-    //increase the ticks on the encoders
     public void runEncoders()
     {
         motorLeftFront.setMode
@@ -360,7 +317,6 @@ public class AutonomousBlue extends LinearOpMode {
     {
         while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
             resetEncoders();
-
     }
     public void SetEncoderPositionToRun()
     {
@@ -391,7 +347,6 @@ public class AutonomousBlue extends LinearOpMode {
             telemetry.update();
         }
         setMotorSpeed(0);
-
     }
     public void CheckRedColor()
     {
@@ -406,8 +361,6 @@ public class AutonomousBlue extends LinearOpMode {
         telemetry.addData("isRed",isRed);
         telemetry.update();
         sleep(2000);
-
-
     }
     public void CheckBeaconForRed( float speed, float waitTime)
     {
@@ -424,7 +377,6 @@ public class AutonomousBlue extends LinearOpMode {
             telemetry.update();
         }
         setMotorSpeed(0);
-
     }
     public void turnBOR(int degres,float speed){turn(degres - MrGyro.getIntegratedZValue(),speed);}
     public void turn(int degrees, float speed) {
@@ -471,7 +423,6 @@ public class AutonomousBlue extends LinearOpMode {
                 motorLeftFront.setPower(-speed);
                 motorLeftBack.setPower(-speed);
             }
-
         }
         setMotorSpeed(0);
     }
@@ -499,7 +450,6 @@ public class AutonomousBlue extends LinearOpMode {
                 motorRightFront.setPower(speed);
                 motorRightBack.setPower(speed);
             }
-
         }
         setMotorSpeed(0);
     }
@@ -515,20 +465,16 @@ public class AutonomousBlue extends LinearOpMode {
         setMotorSpeed(0);
     }
 
-
-
     public void turnLeft(float speed)
     {
-
         motorLeftFront.setPower(-speed);
         motorRightBack.setPower(speed);
         motorRightFront.setPower(speed);
         motorLeftBack.setPower(-speed);
     }
-    //turns robot right
+
     public void turnRight(float speed)
     {
-
         motorLeftFront.setPower(speed);
         motorRightBack.setPower(-speed);
         motorRightFront.setPower(-speed);

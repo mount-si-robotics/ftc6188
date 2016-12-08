@@ -59,23 +59,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name = "AutonomousRed")
-//@Disabled
 public class AutonomousRed extends LinearOpMode {
 
-    /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
 
-
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
-
     private Servo buttonPusher;
-
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor sensorType;
@@ -90,19 +85,14 @@ public class AutonomousRed extends LinearOpMode {
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
-
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
-
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         sensorType = hardwareMap.gyroSensor.get("GSensor");
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
-
-
 
         buttonPusher.setPosition(0);
 
@@ -113,38 +103,10 @@ public class AutonomousRed extends LinearOpMode {
         MrGyro.calibrate();
         while(MrGyro.isCalibrating())
         {
-
         }
-
-        /*moveRobot(distance,speed);
-        searchForWhiteline(speed,light);
-        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
-        decide to moveRobot(); or buttonPusher.setPosition(position);
-        buttonPusher.setPosition(0);
-        moveRobot(distance,speed);
-        searchForWhiteline(speed,light);
-        either if(CheckBeaconForBlue()) or if(CheckBeaconForRed());
-        decide to moveRobot(); or buttonPusher.setPosition(position);*/
-
-
-
         waitForStart();
         runtime.reset();
-        /*turn(-45,.35f,true);
-        sleep(5000);*/
-        /*moveRobot(-50,.4f);
-        turn(-45,.3f,true);
-        CheckBeaconForBlue(-.15f,4);
-        buttonPusher.setPosition(.4);
-        sleep(500);
-        setMotorSpeed(-.05f);
-        sleep(5000);
-        setMotorSpeed(0);*/
 
-        //sleep(10000);
-        //moveRobot(62,.6f);
-
-        //sleep(10000);
         moveRobot2(12,.2f);
         turnUsingRightMotors(-45,.2f);
         moveRobot2(60,.2f,-35);
@@ -152,18 +114,7 @@ public class AutonomousRed extends LinearOpMode {
         setMotorSpeed(.2f);
         sleep(750);
         CheckBeaconForRed(-.2f,5);
-
-
-
-        //buttonPusher.setPosition(.4);
-       // moveRobot(15,.2f);
-
-
-
-
-
     }
-
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
         int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
@@ -175,7 +126,7 @@ public class AutonomousRed extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
         while (motorLeftFront.isBusy()) {
@@ -208,7 +159,7 @@ public class AutonomousRed extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
@@ -265,7 +216,7 @@ public class AutonomousRed extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-        // Turn On RUN_TO_POSITION
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
@@ -321,7 +272,6 @@ public class AutonomousRed extends LinearOpMode {
                 (DcMotor.RunMode.STOP_AND_RESET_ENCODER
                 );
     }
-    //turn off the encoders
     public void stopEncoders()
     {
         motorLeftFront.setMode
@@ -337,7 +287,6 @@ public class AutonomousRed extends LinearOpMode {
                 (DcMotor.RunMode.RUN_WITHOUT_ENCODER
                 );
     }
-    //increase the ticks on the encoders
     public void runEncoders()
     {
         motorLeftFront.setMode
@@ -353,10 +302,8 @@ public class AutonomousRed extends LinearOpMode {
                 (DcMotor.RunMode.RUN_USING_ENCODER
                 );
     }
-
     public void setMotorSpeed(float speed)
     {
-
         motorRightFront.setPower(speed);
         motorLeftFront.setPower(speed);
         motorLeftBack.setPower(speed);
@@ -367,7 +314,6 @@ public class AutonomousRed extends LinearOpMode {
     {
         while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
             resetEncoders();
-
     }
     public void SetEncoderPositionToRun()
     {
@@ -399,7 +345,6 @@ public class AutonomousRed extends LinearOpMode {
             telemetry.update();
         }
         setMotorSpeed(0);
-
     }
     public void CheckRedColor()
     {
@@ -414,8 +359,6 @@ public class AutonomousRed extends LinearOpMode {
         telemetry.addData("isRed",isRed);
         telemetry.update();
        sleep(2000);
-
-
     }
     public void CheckBeaconForRed( float speed, float waitTime)
     {
@@ -432,7 +375,6 @@ public class AutonomousRed extends LinearOpMode {
             telemetry.update();
         }
         setMotorSpeed(0);
-
     }
     public void turnBOR(int degres,float speed){turn(degres - MrGyro.getIntegratedZValue(),speed);}
     public void turn(int degrees, float speed) {
@@ -479,7 +421,6 @@ public class AutonomousRed extends LinearOpMode {
                 motorLeftFront.setPower(-speed);
                 motorLeftBack.setPower(-speed);
             }
-
         }
         setMotorSpeed(0);
     }
@@ -507,7 +448,6 @@ public class AutonomousRed extends LinearOpMode {
                 motorRightFront.setPower(speed);
                 motorRightBack.setPower(speed);
             }
-
         }
         setMotorSpeed(0);
     }
@@ -522,21 +462,15 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
-
-
-
     public void turnLeft(float speed)
     {
-
         motorLeftFront.setPower(-speed);
         motorRightBack.setPower(speed);
         motorRightFront.setPower(speed);
         motorLeftBack.setPower(-speed);
     }
-    //turns robot right
     public void turnRight(float speed)
     {
-
         motorLeftFront.setPower(speed);
         motorRightBack.setPower(-speed);
         motorRightFront.setPower(-speed);

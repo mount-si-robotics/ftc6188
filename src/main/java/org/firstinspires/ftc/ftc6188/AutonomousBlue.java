@@ -114,7 +114,8 @@ public class AutonomousBlue extends LinearOpMode {
         moveRobot2(-60,.2f);
         turnUsingLeftMotors(0,.2f,0);
         searchForWhiteLine(.1f);
-        moveRobot2(10,.2f,0);
+        setMotorSpeed(.2f);
+        sleep(750);
 
         CheckBeaconForBlue(-.1f,3);
     }
@@ -170,13 +171,16 @@ public class AutonomousBlue extends LinearOpMode {
 
             currentheading = -MrGyro.getIntegratedZValue();
             headingerror = targetAngle - currentheading;
+
             drivesteering = headingerror * driveConstant;
-            leftPower = midPower - drivesteering;
+            if(distance < 0)
+                drivesteering *=-1;
+            leftPower = midPower + drivesteering;
             if(leftPower > 1)
                 leftPower = 1;
             if(leftPower < 0)
                 leftPower = 0;
-            rightPower = midPower + drivesteering;
+            rightPower = midPower - drivesteering;
             if(rightPower > 1)
                 rightPower = 1;
             if(rightPower < 0)

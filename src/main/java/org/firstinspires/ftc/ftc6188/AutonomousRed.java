@@ -169,6 +169,8 @@ public class AutonomousRed extends LinearOpMode {
 
             headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
+            if(distance < 0)
+                drivesteering *=-1;
             leftPower = midPower + drivesteering;
             if(leftPower > 1)
                 leftPower = 1;

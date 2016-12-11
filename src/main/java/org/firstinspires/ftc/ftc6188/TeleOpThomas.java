@@ -105,20 +105,6 @@ public class TeleOpThomas extends OpMode
         float left;
         float right;
 
-        if(gamepad1.a)
-        {
-            motorRightBack.setDirection(DcMotor.Direction.FORWARD);
-            motorRightFront.setDirection(DcMotor.Direction.FORWARD);
-            motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
-            motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-        }
-        else if(gamepad1.b)
-        {
-            motorRightBack.setDirection(DcMotor.Direction.REVERSE);
-            motorRightFront.setDirection(DcMotor.Direction.REVERSE);
-            motorLeftBack.setDirection(DcMotor.Direction.FORWARD);
-            motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-        }
         if(gamepad1.right_trigger > 0.25)
         {
             buttonPusherPosition+=.004f;
@@ -128,10 +114,9 @@ public class TeleOpThomas extends OpMode
             buttonPusherPosition-=.004f;
         }
         Range.clip(buttonPusherPosition,0,1);
-        telemetry.addData("buttonPusherPosition ",buttonPusherPosition);
         buttonPusher.setPosition(buttonPusherPosition);
 
-        telemetry.update();
+
 
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;

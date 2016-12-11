@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.ftc6188;
 
 import android.graphics.Color;
+import android.graphics.Path;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -57,8 +58,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "AutonomousBlue")
-public class AutonomousBlue extends LinearOpMode {
+@Autonomous(name = "AutonomousRed")
+public class basicAutonomous extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
@@ -84,12 +85,9 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
-
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
-
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         sensorType = hardwareMap.gyroSensor.get("GSensor");
@@ -108,16 +106,21 @@ public class AutonomousBlue extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
-
-        moveRobot2(12,.2f);
-        turnUsingRightMotors(45,.15f);
-        moveRobot2(60,.2f);
+        moveRobot(-48,.2f);
+        turnUsingLeftMotors(-70,.2f,0);
+        moveRobot2(6,.2f);
+        turnUsingLeftMotors(-45,.2f,0);
+        /*moveRobot2(-12,.2f);
+        turnUsingRightMotors(45,.2f);
+        moveRobot2(-60,.2f);
         turnUsingLeftMotors(0,.2f,0);
-        searchForWhiteLine(.1f);
         setMotorSpeed(.2f);
-        sleep(750);
+        sleep(1500);*/
 
-        CheckBeaconForBlue(-.1f,3);
+        CheckBeaconForRed(-.1f,5);
+        buttonPusher.setPosition(.3f);
+        setMotorSpeed(-.1f);
+        sleep(2000);
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -170,8 +173,8 @@ public class AutonomousBlue extends LinearOpMode {
         while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
 
             currentheading = -MrGyro.getIntegratedZValue();
-            headingerror = targetAngle - currentheading;
 
+            headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
             if(distance < 0)
                 drivesteering *=-1;
@@ -222,6 +225,7 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
+
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
@@ -307,10 +311,8 @@ public class AutonomousBlue extends LinearOpMode {
                 (DcMotor.RunMode.RUN_USING_ENCODER
                 );
     }
-
     public void setMotorSpeed(float speed)
     {
-
         motorRightFront.setPower(speed);
         motorLeftFront.setPower(speed);
         motorLeftBack.setPower(speed);
@@ -339,7 +341,6 @@ public class AutonomousBlue extends LinearOpMode {
     }
     public void CheckBeaconForBlue( float speed, float waitTime)
     {
-        sleep(200);
         float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
         setMotorSpeed(speed);
@@ -348,6 +349,8 @@ public class AutonomousBlue extends LinearOpMode {
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);
+            telemetry.addData("startTime", startTime);
+            telemetry.addData("timer", runtime.time());
             telemetry.update();
         }
         setMotorSpeed(0);
@@ -372,7 +375,7 @@ public class AutonomousBlue extends LinearOpMode {
         double startTime = runtime.time();
         setMotorSpeed(speed);
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
+        while(hsvValues[0]>35 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);
@@ -461,14 +464,13 @@ public class AutonomousBlue extends LinearOpMode {
     {
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(OpticalDistance.getRawLightDetected() < .2
+        while(OpticalDistance.getRawLightDetected() < .3
                 && runtime.time() < startTime +4)
         {
             telemetry.addData("lightBack", OpticalDistance.getRawLightDetected());
         }
         setMotorSpeed(0);
     }
-
     public void turnLeft(float speed)
     {
         motorLeftFront.setPower(-speed);
@@ -476,7 +478,6 @@ public class AutonomousBlue extends LinearOpMode {
         motorRightFront.setPower(speed);
         motorLeftBack.setPower(-speed);
     }
-
     public void turnRight(float speed)
     {
         motorLeftFront.setPower(speed);

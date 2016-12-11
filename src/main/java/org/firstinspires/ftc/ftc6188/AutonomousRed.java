@@ -106,14 +106,14 @@ public class AutonomousRed extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
-
-        moveRobot2(12,.2f);
-        turnUsingRightMotors(-45,.2f);
-        moveRobot2(60,.2f,-35);
-        turnUsingLeftMotors(0,.2f,0);
-        setMotorSpeed(.2f);
-        sleep(750);
-        CheckBeaconForRed(-.2f,5);
+        moveRobot2(-48,.2f);
+        turnUsingLeftMotors(-70,.2f,0);
+        moveRobot2(6,.2f);
+        turnUsingLeftMotors(-45,.2f,0);
+        CheckBeaconForRed(-.1f,5);
+        buttonPusher.setPosition(.3f);
+        setMotorSpeed(-.1f);
+        sleep(2000);
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -368,7 +368,7 @@ public class AutonomousRed extends LinearOpMode {
         double startTime = runtime.time();
         setMotorSpeed(speed);
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
+        while(hsvValues[0]>35 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);

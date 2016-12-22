@@ -70,6 +70,8 @@ public class AutonomousRed extends LinearOpMode {
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
+    private DcMotor ballLauncher;
+
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
@@ -85,6 +87,7 @@ public class AutonomousRed extends LinearOpMode {
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
+        ballLauncher = hardwareMap.dcMotor.get("Launcher");
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
@@ -106,13 +109,13 @@ public class AutonomousRed extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
-        moveRobot2(-48,.2f);
-        turnUsingLeftMotors(-70,.2f,0);
-        moveRobot2(6,.2f);
-        turnUsingLeftMotors(-45,.2f,0);
-        CheckBeaconForRed(-.1f,5);
+        moveRobot2(48,.2f);
+        turnUsingLeftMotors(70,.2f,0);
+        moveRobot2(-6,.2f);
+        turnUsingLeftMotors(45,.2f,0);
+        CheckBeaconForRed(.1f,5);
         buttonPusher.setPosition(.3f);
-        setMotorSpeed(-.1f);
+        setMotorSpeed(.1f);
         sleep(2000);
     }
     public void moveRobot(double distance, float speed) {

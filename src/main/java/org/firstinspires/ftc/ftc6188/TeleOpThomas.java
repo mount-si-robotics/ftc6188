@@ -63,6 +63,7 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorRightBack;
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
+    private DcMotor ballLauncher;
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
@@ -78,6 +79,9 @@ public class TeleOpThomas extends OpMode
         motorRightBack = hardwareMap.dcMotor.get("RBMotor");
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
+
+        ballLauncher = hardwareMap.dcMotor.get("Launcher");
+
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
@@ -104,6 +108,12 @@ public class TeleOpThomas extends OpMode
         telemetry.addData("Status", "Running: " + runtime.toString());
         float left;
         float right;
+
+
+        if (gamepad1.a)
+            ballLauncher.setPower(1);
+        else
+            ballLauncher.setPower(0);
 
         if(gamepad1.right_trigger > 0.25)
         {

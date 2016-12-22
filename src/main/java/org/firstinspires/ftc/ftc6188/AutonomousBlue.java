@@ -69,6 +69,7 @@ public class AutonomousBlue extends LinearOpMode {
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
+    private DcMotor ballLauncher;
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
     private OpticalDistanceSensor OpticalDistance;
@@ -109,15 +110,15 @@ public class AutonomousBlue extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        moveRobot2(12,.2f);
-        turnUsingRightMotors(45,.15f);
-        moveRobot2(60,.2f);
-        turnUsingLeftMotors(0,.2f,0);
-        searchForWhiteLine(.1f);
-        setMotorSpeed(.2f);
-        sleep(750);
-
-        CheckBeaconForBlue(-.1f,3);
+        moveRobot2(-52,.2f);
+        turnUsingRightMotors(70,.2f,0);
+        moveRobot2(9,.2f);
+        turnUsingRightMotors(45,.2f,0);
+        CheckBeaconForBlue(-.1f,5,45);
+        moveRobot2(14,.2f);
+        buttonPusher.setPosition(.3f);
+        setMotorSpeed(-.1f);
+        sleep(4000);
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -337,16 +338,45 @@ public class AutonomousBlue extends LinearOpMode {
                 (DcMotor.RunMode.RUN_TO_POSITION
                 );
     }
-    public void CheckBeaconForBlue( float speed, float waitTime)
+    public void CheckBeaconForBlue( float speed, float waitTime, float targetAngle)
     {
         sleep(200);
-        float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
+
+        int headingerror;
+        int currentheading;
+        float driveConstant= .003f;
+        float midPower = speed;
+        float drivesteering;
+        float leftPower,rightPower;
+
         setMotorSpeed(speed);
+
+        float hsvValues[] = {0F,0F,0F};
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
         while(hsvValues[0]<150 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            currentheading = -MrGyro.getIntegratedZValue();
+            headingerror = targetAngle - currentheading;
+
+            drivesteering = headingerror * driveConstant;
+            if(speed < 0)
+                drivesteering *=-1;
+            leftPower = midPower + drivesteering;
+            if(leftPower > 1)
+                leftPower = 1;
+            if(leftPower < 0)
+                leftPower = 0;
+            rightPower = midPower - drivesteering;
+            if(rightPower > 1)
+                rightPower = 1;
+            if(rightPower < 0)
+                rightPower = 0;
+            motorLeftBack.setPower(leftPower);
+            motorLeftFront.setPower(leftPower);
+            motorRightBack.setPower(rightPower);
+            motorRightFront.setPower(rightPower);
             telemetry.addData("Hue", hsvValues[0]);
             telemetry.update();
         }
@@ -430,9 +460,8 @@ public class AutonomousBlue extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
-    public void turnUsingRightMotors(int degrees, float speed) {
+    public void turnUsingRightMotors(int degrees, float speed, float tollerance) {
         int currentheading = -MrGyro.getIntegratedZValue();
-        int tollerance = 1;
         double startTime = runtime.time();
 
         while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
@@ -457,6 +486,7 @@ public class AutonomousBlue extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
+
     public void searchForWhiteLine(float speed)
     {
         double startTime = runtime.time();

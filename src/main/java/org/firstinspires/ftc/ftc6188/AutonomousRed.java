@@ -109,14 +109,22 @@ public class AutonomousRed extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
-        moveRobot2(48,.2f);
-        turnUsingLeftMotors(70,.2f,0);
-        moveRobot2(-6,.2f);
-        turnUsingLeftMotors(45,.2f,0);
-        CheckBeaconForRed(.1f,5);
-        buttonPusher.setPosition(.3f);
-        setMotorSpeed(.1f);
-        sleep(2000);
+        moveRobot2(-52,.2f);
+        turnUsingRightMotors(70,.2f,0);
+        moveRobot2(4,.2f);
+        turnUsingRightMotors(45,.2f,0);
+        searchForWhiteLine(-.1f);
+        moveRobot2(-4,.1f,45);
+        float hsvValues[] = {0F,0F,0F};
+        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150)
+            moveRobot2(4,.1f,45);
+        else
+            moveRobot2(8,.1f,45);
+        buttonPusher.setPosition(.50f);
+        moveRobot2(-10,.1f,45);
+        //setMotorSpeed(-.1f);
+        //sleep(2000);
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -169,8 +177,8 @@ public class AutonomousRed extends LinearOpMode {
         while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
 
             currentheading = -MrGyro.getIntegratedZValue();
-
             headingerror = targetAngle - currentheading;
+
             drivesteering = headingerror * driveConstant;
             if(distance < 0)
                 drivesteering *=-1;
@@ -221,7 +229,6 @@ public class AutonomousRed extends LinearOpMode {
         motorRightFront.setTargetPosition(PositionTarget2);
         motorRightBack.setTargetPosition(PositionTarget3);
         motorLeftFront.setTargetPosition(PositionTarget4);
-
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
@@ -307,8 +314,10 @@ public class AutonomousRed extends LinearOpMode {
                 (DcMotor.RunMode.RUN_USING_ENCODER
                 );
     }
+
     public void setMotorSpeed(float speed)
     {
+
         motorRightFront.setPower(speed);
         motorLeftFront.setPower(speed);
         motorLeftBack.setPower(speed);
@@ -351,27 +360,13 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
-    public void CheckRedColor()
-    {
-        float hsvValues[] = {0F,0F,0F};
-        double startTime = runtime.time();
-        boolean isRed = false;
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] < 20)
-                isRed = true;
-
-        telemetry.addData("isRed",isRed);
-        telemetry.update();
-       sleep(2000);
-    }
     public void CheckBeaconForRed( float speed, float waitTime)
     {
         float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
         setMotorSpeed(speed);
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]>35 && runtime.time() < startTime+waitTime)
+        while(hsvValues[0]>15 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);
@@ -429,9 +424,8 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
-    public void turnUsingRightMotors(int degrees, float speed) {
+    public void turnUsingRightMotors(int degrees, float speed, float tollerance) {
         int currentheading = -MrGyro.getIntegratedZValue();
-        int tollerance = 1;
         double startTime = runtime.time();
 
         while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
@@ -456,17 +450,19 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
+
     public void searchForWhiteLine(float speed)
     {
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(OpticalDistance.getRawLightDetected() < .3
+        while(OpticalDistance.getRawLightDetected() < .2
                 && runtime.time() < startTime +4)
         {
             telemetry.addData("lightBack", OpticalDistance.getRawLightDetected());
         }
         setMotorSpeed(0);
     }
+
     public void turnLeft(float speed)
     {
         motorLeftFront.setPower(-speed);
@@ -474,6 +470,7 @@ public class AutonomousRed extends LinearOpMode {
         motorRightFront.setPower(speed);
         motorLeftBack.setPower(-speed);
     }
+
     public void turnRight(float speed)
     {
         motorLeftFront.setPower(speed);

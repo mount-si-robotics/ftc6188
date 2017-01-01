@@ -110,12 +110,12 @@ public class AutonomousBlue extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        moveRobot2(-52,.2f);
+        moveRobot2(52,.2f);
         turnUsingRightMotors(70,.2f,0);
-        moveRobot2(9,.2f);
+        moveRobot2(-9,.2f);
         turnUsingRightMotors(45,.2f,0);
-        CheckBeaconForBlue(-.1f,5,45);
-        moveRobot2(14,.2f);
+        CheckBeaconForBlue(.1f,5);
+        moveRobot2(-14,.2f);
         buttonPusher.setPosition(.3f);
         setMotorSpeed(-.1f);
         sleep(4000);
@@ -338,63 +338,21 @@ public class AutonomousBlue extends LinearOpMode {
                 (DcMotor.RunMode.RUN_TO_POSITION
                 );
     }
-    public void CheckBeaconForBlue( float speed, float waitTime, float targetAngle)
+    public void CheckBeaconForBlue( float speed, float waitTime)
     {
-        sleep(200);
-        double startTime = runtime.time();
-
-        int headingerror;
-        int currentheading;
-        float driveConstant= .003f;
-        float midPower = speed;
-        float drivesteering;
-        float leftPower,rightPower;
-
-        setMotorSpeed(speed);
-
         float hsvValues[] = {0F,0F,0F};
+        double startTime = runtime.time();
+        setMotorSpeed(speed);
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
         while(hsvValues[0]<150 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-            currentheading = -MrGyro.getIntegratedZValue();
-            headingerror = targetAngle - currentheading;
-
-            drivesteering = headingerror * driveConstant;
-            if(speed < 0)
-                drivesteering *=-1;
-            leftPower = midPower + drivesteering;
-            if(leftPower > 1)
-                leftPower = 1;
-            if(leftPower < 0)
-                leftPower = 0;
-            rightPower = midPower - drivesteering;
-            if(rightPower > 1)
-                rightPower = 1;
-            if(rightPower < 0)
-                rightPower = 0;
-            motorLeftBack.setPower(leftPower);
-            motorLeftFront.setPower(leftPower);
-            motorRightBack.setPower(rightPower);
-            motorRightFront.setPower(rightPower);
             telemetry.addData("Hue", hsvValues[0]);
+            telemetry.addData("startTime", startTime);
+            telemetry.addData("timer", runtime.time());
             telemetry.update();
         }
         setMotorSpeed(0);
-    }
-    public void CheckRedColor()
-    {
-        float hsvValues[] = {0F,0F,0F};
-        double startTime = runtime.time();
-        boolean isRed = false;
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        if(hsvValues[0] < 20)
-            isRed = true;
-
-        telemetry.addData("isRed",isRed);
-        telemetry.update();
-        sleep(2000);
     }
     public void CheckBeaconForRed( float speed, float waitTime)
     {

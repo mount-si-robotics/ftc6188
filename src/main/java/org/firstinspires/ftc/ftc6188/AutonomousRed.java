@@ -74,12 +74,14 @@ public class AutonomousRed extends LinearOpMode {
 
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
+    private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor sensorType;
     private ModernRoboticsI2cGyro MrGyro;
 
     @Override
     public void runOpMode() {
+        float hsvValues[] = {0F,0F,0F};
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -92,6 +94,7 @@ public class AutonomousRed extends LinearOpMode {
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
+        modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         sensorType = hardwareMap.gyroSensor.get("GSensor");
 
@@ -114,15 +117,18 @@ public class AutonomousRed extends LinearOpMode {
         moveRobot2(4,.2f);
         turnUsingRightMotors(45,.2f,0);
         searchForWhiteLine(-.1f);
-        moveRobot2(-4,.1f,45);
-        float hsvValues[] = {0F,0F,0F};
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150)
-            moveRobot2(4,.1f,45);
+            moveRobot2(2,.1f,45);
         else
-            moveRobot2(8,.1f,45);
-        buttonPusher.setPosition(.50f);
-        moveRobot2(-10,.1f,45);
+            moveRobot2(-2,.1f,45);
+        moveRobot2(-27,.2f,45);
+        searchForWhiteLine(-.1f);
+        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150)
+            moveRobot2(2,.1f,45);
+        else
+            moveRobot2(-2,.1f,45);
         //setMotorSpeed(-.1f);
         //sleep(2000);
     }

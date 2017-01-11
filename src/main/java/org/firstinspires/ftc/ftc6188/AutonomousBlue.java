@@ -72,12 +72,14 @@ public class AutonomousBlue extends LinearOpMode {
     private DcMotor ballLauncher;
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
+    private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor sensorType;
     private ModernRoboticsI2cGyro MrGyro;
 
     @Override
     public void runOpMode() {
+        float hsvValues[] = {0F,0F,0F};
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -92,6 +94,7 @@ public class AutonomousBlue extends LinearOpMode {
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
 
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
+        modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         sensorType = hardwareMap.gyroSensor.get("GSensor");
 
@@ -112,13 +115,15 @@ public class AutonomousBlue extends LinearOpMode {
 
         moveRobot2(52,.2f);
         turnUsingRightMotors(70,.2f,0);
-        moveRobot2(-9,.2f);
+        moveRobot2(-4,.2f);
         turnUsingRightMotors(45,.2f,0);
-        CheckBeaconForBlue(.1f,5);
-        moveRobot2(-14,.2f);
-        buttonPusher.setPosition(.3f);
-        setMotorSpeed(-.1f);
-        sleep(4000);
+        searchForWhiteLine(.1f);
+        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150)
+            moveRobot2(-2,.1f,45);
+        else
+            moveRobot2(2,.1f,45);
+
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;

@@ -66,6 +66,7 @@ public class TeleOpThomas extends OpMode
     private DcMotor ballLauncher;
     private Servo buttonPusher;
     private ColorSensor modernRobotics;
+    private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor MrGyro;
 
@@ -84,6 +85,7 @@ public class TeleOpThomas extends OpMode
 
         buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
+        modernRobotics = hardwareMap.colorSensor.get("MRCSensor2");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         MrGyro = hardwareMap.gyroSensor.get("GSensor");
 

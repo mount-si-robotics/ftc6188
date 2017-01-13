@@ -70,7 +70,7 @@ public class AutonomousBlue extends LinearOpMode {
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
     private DcMotor ballLauncher;
-    private Servo buttonPusher;
+    private DcMotor linSlide;
     private ColorSensor modernRobotics;
     private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
@@ -88,10 +88,11 @@ public class AutonomousBlue extends LinearOpMode {
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
 
+        ballLauncher = hardwareMap.dcMotor.get("Launcher");
+        linSlide = hardwareMap.dcMotor.get("linSlide");
+
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-
-        buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
 
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
@@ -100,11 +101,14 @@ public class AutonomousBlue extends LinearOpMode {
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
 
-        buttonPusher.setPosition(0);
-
+        linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         resetEncoders();
+        while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
+            linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         checkEncoder();
+        linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
+
 
         MrGyro.calibrate();
         while(MrGyro.isCalibrating())
@@ -112,18 +116,44 @@ public class AutonomousBlue extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
-
         moveRobot2(52,.2f);
-        turnUsingRightMotors(70,.2f,0);
-        moveRobot2(-4,.2f);
-        turnUsingRightMotors(45,.2f,0);
+        turnUsingRightMotors(70,.1f,0);
+        moveRobot2(-6,.2f);
+        turnUsingRightMotors(45,.05f,0);
         searchForWhiteLine(.1f);
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150)
+            moveRobot2(-2,.1f,45);
+        else
+            moveRobot2(2,.1f,45);
+        turnUsingRightMotors(45,.02f,2);
+        moveRobot2(27,.2f,45);
+        searchForWhiteLine(.1f);
+        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150)
             moveRobot2(-2,.1f,45);
         else
             moveRobot2(2,.1f,45);
 
+    }
+    public void linearSlider(double distance, float speed)
+    {
+        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
+
+        linSlide.setTargetPosition(PositionTarget1);
+        linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        linSlide.setPower(speed);
+        while (linSlide.isBusy()) {
+            telemetry.addData("angle",
+                    MrGyro.getHeading());
+
+            telemetry.update();
+        }
+        linSlide.setPower(0);
+        linSlide.setMode
+                (DcMotor.RunMode.RUN_USING_ENCODER
+                );
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -237,6 +267,8 @@ public class AutonomousBlue extends LinearOpMode {
 
             headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
+            if(distance < 0)
+                drivesteering *=-1;
             leftPower = midPower + drivesteering;
             if(leftPower > 1)
                 leftPower = 1;

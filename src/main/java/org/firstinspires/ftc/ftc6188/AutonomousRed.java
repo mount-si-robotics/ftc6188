@@ -70,9 +70,10 @@ public class AutonomousRed extends LinearOpMode {
     private DcMotor motorLeftBack;
     private DcMotor motorRightFront;
     private DcMotor motorRightBack;
+
+    private DcMotor linSlide;
     private DcMotor ballLauncher;
 
-    private Servo buttonPusher;
     private ColorSensor modernRobotics;
     private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
@@ -90,9 +91,9 @@ public class AutonomousRed extends LinearOpMode {
         motorLeftFront = hardwareMap.dcMotor.get("LFMotor");
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
         ballLauncher = hardwareMap.dcMotor.get("Launcher");
+        linSlide = hardwareMap.dcMotor.get("linSlide");
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
-        buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
         modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
@@ -100,10 +101,12 @@ public class AutonomousRed extends LinearOpMode {
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
 
-        buttonPusher.setPosition(0);
-
+        linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         resetEncoders();
+        while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
+            linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         checkEncoder();
+        linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
 
         MrGyro.calibrate();
@@ -112,16 +115,32 @@ public class AutonomousRed extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
+
         moveRobot2(-52,.2f);
-        turnUsingRightMotors(70,.2f,0);
-        moveRobot2(4,.2f);
-        turnUsingRightMotors(45,.2f,0);
+        turnUsingRightMotors(70,.1f,0);
+        moveRobot2(8,.2f);
+        turnUsingRightMotors(45,.02f,0);
         searchForWhiteLine(-.1f);
-        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
+        Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
         if(hsvValues[0] > 150)
-            moveRobot2(2,.1f,45);
-        else
             moveRobot2(-2,.1f,45);
+        else
+            moveRobot2(2,.1f,45);
+        linSlide.setPower(.5f);
+        sleep(800);
+        linSlide.setPower(-.5f);
+        sleep(800);
+        linSlide.setPower(0);
+        Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
+        if(hsvValues[0] > 150) {
+            sleep(5000);
+            linSlide.setPower(.5f);
+            sleep(800);
+            linSlide.setPower(-.5f);
+            sleep(800);
+            linSlide.setPower(0);
+        }
+        turnUsingRightMotors(45,.02f,2);
         moveRobot2(-27,.2f,45);
         searchForWhiteLine(-.1f);
         Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
@@ -129,8 +148,40 @@ public class AutonomousRed extends LinearOpMode {
             moveRobot2(2,.1f,45);
         else
             moveRobot2(-2,.1f,45);
-        //setMotorSpeed(-.1f);
-        //sleep(2000);
+        linSlide.setPower(.5f);
+        sleep(800);
+        linSlide.setPower(-.5f);
+        sleep(800);
+        linSlide.setPower(0);
+        Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150) {
+            sleep(5000);
+            linSlide.setPower(.5f);
+            sleep(800);
+            linSlide.setPower(-.5f);
+            sleep(800);
+            linSlide.setPower(0);
+        }
+
+    }
+    public void linearSlider(double distance, float speed)
+    {
+        double ticksToInches = (ENCODERTICKS ) / CIRCUMFENCE;
+        int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
+
+        linSlide.setTargetPosition(PositionTarget1);
+        linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        linSlide.setPower(speed);
+        while (linSlide.isBusy()) {
+            telemetry.addData("ticks",
+                    linSlide.getCurrentPosition());
+
+            telemetry.update();
+        }
+        linSlide.setPower(0);
+        linSlide.setMode
+                (DcMotor.RunMode.RUN_USING_ENCODER
+                );
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -244,6 +295,8 @@ public class AutonomousRed extends LinearOpMode {
 
             headingerror = targetAngle - currentheading;
             drivesteering = headingerror * driveConstant;
+            if(distance < 0)
+                drivesteering *=-1;
             leftPower = midPower + drivesteering;
             if(leftPower > 1)
                 leftPower = 1;
@@ -270,10 +323,6 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
         runEncoders();
-    }
-    public boolean MotorsBusy()
-    {
-        return motorLeftBack.isBusy() && motorLeftFront.isBusy() && motorRightBack.isBusy() && motorRightFront.isBusy();
     }
     public void resetEncoders()
     {
@@ -372,7 +421,7 @@ public class AutonomousRed extends LinearOpMode {
         double startTime = runtime.time();
         setMotorSpeed(speed);
         Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]>15 && runtime.time() < startTime+waitTime)
+        while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
         {
             Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);

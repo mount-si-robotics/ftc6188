@@ -64,14 +64,11 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftBack;
     private DcMotor motorLeftFront;
     private DcMotor ballLauncher;
-    private Servo buttonPusher;
+    private DcMotor linSlide;
     private ColorSensor modernRobotics;
     private ColorSensor modernRobotics2;
     private OpticalDistanceSensor OpticalDistance;
     private GyroSensor MrGyro;
-
-    private float buttonPusherPosition = 0;
-
 
     @Override
     public void init() {
@@ -82,18 +79,19 @@ public class TeleOpThomas extends OpMode
         motorLeftBack = hardwareMap.dcMotor.get("LBMotor");
 
         ballLauncher = hardwareMap.dcMotor.get("Launcher");
+        linSlide = hardwareMap.dcMotor.get("linSlide");
 
-        buttonPusher = hardwareMap.servo.get("ButtonPusherCRServo");
         modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
-        modernRobotics = hardwareMap.colorSensor.get("MRCSensor2");
+        modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
         OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
         MrGyro = hardwareMap.gyroSensor.get("GSensor");
 
-        buttonPusher.setPosition(0);
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightBack.setDirection(DcMotor.Direction.FORWARD);
         motorRightFront.setDirection(DcMotor.Direction.FORWARD);
+
+        linSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
@@ -116,17 +114,12 @@ public class TeleOpThomas extends OpMode
             ballLauncher.setPower(1);
         else
             ballLauncher.setPower(0);
-
-        if(gamepad1.right_trigger > 0.25)
-        {
-            buttonPusherPosition+=.004f;
-        }
         if(gamepad1.right_bumper)
-        {
-            buttonPusherPosition-=.004f;
-        }
-        Range.clip(buttonPusherPosition,0,1);
-        buttonPusher.setPosition(buttonPusherPosition);
+            linSlide.setPower(.5);
+        else if(gamepad1.right_trigger > .25)
+            linSlide.setPower(-.5);
+        else
+            linSlide.setPower(0);
 
 
 

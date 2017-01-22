@@ -33,10 +33,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.ftc6188;
 
 import android.graphics.Color;
-import android.graphics.Path;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -59,6 +59,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name = "AutonomousRed")
+@Disabled
 public class AutonomousRed extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -134,10 +135,10 @@ public class AutonomousRed extends LinearOpMode {
         Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
         if(hsvValues[0] > 150) {
             sleep(5000);
-            linSlide.setPower(.5f);
-            sleep(800);
             linSlide.setPower(-.5f);
-            sleep(800);
+            sleep(1000);
+            linSlide.setPower(.5f);
+            sleep(1000);
             linSlide.setPower(0);
         }
         turnUsingRightMotors(45,.02f,2);
@@ -148,17 +149,17 @@ public class AutonomousRed extends LinearOpMode {
             moveRobot2(2,.1f,45);
         else
             moveRobot2(-2,.1f,45);
-        linSlide.setPower(.5f);
-        sleep(800);
         linSlide.setPower(-.5f);
-        sleep(800);
+        sleep(1000);
+        linSlide.setPower(.5f);
+        sleep(1000);
         linSlide.setPower(0);
         Color.RGBToHSV((modernRobotics2.red() * 255) / 800, (modernRobotics2.green() * 255) / 800, (modernRobotics2.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
             sleep(5000);
-            linSlide.setPower(.5f);
-            sleep(800);
             linSlide.setPower(-.5f);
+            sleep(800);
+            linSlide.setPower(.5f);
             sleep(800);
             linSlide.setPower(0);
         }
@@ -166,7 +167,7 @@ public class AutonomousRed extends LinearOpMode {
     }
     public void linearSlider(double distance, float speed)
     {
-        double ticksToInches = (ENCODERTICKS ) / CIRCUMFENCE;
+        double ticksToInches = (ENCODERTICKS * 2) / (3.0/16*Math.PI);
         int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
 
         linSlide.setTargetPosition(PositionTarget1);
@@ -517,7 +518,15 @@ public class AutonomousRed extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
-
+    /*public void senseWall(float speed, int distance)
+    {
+        setMotorSpeed(speed);
+        while(USensor.getUltrasonicLevel()) > distance)
+        {
+            telemetry.addData("distance ", USensor.getUltrasonicLevel()));
+        }
+        setMotorSpeed(0);
+    }*/
     public void turnLeft(float speed)
     {
         motorLeftFront.setPower(-speed);

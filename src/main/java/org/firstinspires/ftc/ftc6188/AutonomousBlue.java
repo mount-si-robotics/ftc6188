@@ -36,6 +36,7 @@ import android.graphics.Color;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -58,6 +59,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name = "AutonomousBlue")
+@Disabled
 public class AutonomousBlue extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -138,7 +140,7 @@ public class AutonomousBlue extends LinearOpMode {
     }
     public void linearSlider(double distance, float speed)
     {
-        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        double ticksToInches = (ENCODERTICKS * 2) / (3.0/16*Math.PI);
         int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
 
         linSlide.setTargetPosition(PositionTarget1);
@@ -493,6 +495,15 @@ public class AutonomousBlue extends LinearOpMode {
         }
         setMotorSpeed(0);
     }
+        /*public void senseWall(float speed, int distance)
+    {
+        setMotorSpeed(speed);
+        while(USensor.getUltrasonicLevel()) > distance)
+        {
+            telemetry.addData("distance ", USensor.getUltrasonicLevel()));
+        }
+        setMotorSpeed(0);
+    }*/
 
     public void turnLeft(float speed)
     {

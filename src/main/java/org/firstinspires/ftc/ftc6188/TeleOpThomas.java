@@ -137,8 +137,8 @@ public class TeleOpThomas extends OpMode
             liftMotor1.setPower(0);
             liftMotor2.setPower(0);
         }
-        telemetry.addData("inches motorLift1: ",liftMotor1.getCurrentPosition() / 1120 * (2.5 * Math.PI));
-        telemetry.addData("inches motorLift2: ",liftMotor2.getCurrentPosition() / 1120 * (2.5 * Math.PI));
+        telemetry.addData("inches motorLift1: ",liftMotor1.getCurrentPosition() / (1120 / (2.5 * Math.PI));
+        telemetry.addData("inches motorLift2: ",liftMotor2.getCurrentPosition() / (1120 / (2.5 * Math.PI));
         telemetry.update();*/
 
         left = -gamepad1.left_stick_y;

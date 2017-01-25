@@ -135,7 +135,7 @@ public class AutonomousCombined extends LinearOpMode {
         //turn robot 45 degrees at 5% power and 0 tolerance
         turnUsingRightMotors(45,.05f,0);
         //search for white line using optical distance sensor at 10% power
-        searchForWhiteLine(.1f);
+        searchForWhiteLine(.1f * alliance);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
             //move robot backwards 2 inches at 10% power at 45 degrees
@@ -168,7 +168,7 @@ public class AutonomousCombined extends LinearOpMode {
         //moves robot 27 inches at 20% power at 45 degrees
         moveRobot2(27 * alliance,.2f,45);
         //search for white line using optical distance sensor at 10% power
-        searchForWhiteLine(.1f);
+        searchForWhiteLine(.1f * alliance);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
             //move robot backwards 2 inches at 10% power at 45 degrees
@@ -308,6 +308,42 @@ public class AutonomousCombined extends LinearOpMode {
         setMotorSpeed(0);
         runEncoders();
     }
+    /*public void driveDistanceFromWallToWhiteLine(float speed, float targetDistance)
+    {
+        double startTime = runtime.time();
+        float distanceError;
+        float currentDistance;
+        float driveConstant= .003f;
+        float midPower = speed;
+        float driveSteering;
+        float leftPower,rightPower;
+
+        while(OpticalDistance.getRawLightDetected() < .2
+                && runtime.time() < startTime +4) {
+            currentDistance = USensor.getUltrasonicLevel();
+
+            distanceError = targetDistance - currentDistance;
+            driveSteering = distanceError * driveConstant;
+            if(speed < 0)
+                driveSteering *=-1;
+            leftPower = midPower + driveSteering;
+            if(leftPower > 1)
+                leftPower = 1;
+            if(leftPower < 0)
+                leftPower = 0;
+            rightPower = midPower - driveSteering;
+            if(rightPower > 1)
+                rightPower = 1;
+            if(rightPower < 0)
+                rightPower = 0;
+            motorLeftBack.setPower(leftPower);
+            motorLeftFront.setPower(leftPower);
+            motorRightBack.setPower(rightPower);
+            motorRightFront.setPower(rightPower);
+
+
+        }
+    }*/
     public void moveRobot2(double distance, float speed, int targetAngle) {
         sleep(100);
         double startTime = runtime.time();

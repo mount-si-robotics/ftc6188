@@ -112,12 +112,16 @@ public class AutonomousCombined extends LinearOpMode {
         {
         }
         //set up the robot depending on the situation
+        boolean pressed = false;
         while(!isStarted())
         {
             telemetry.addData("angle", MrGyro.getHeading());
-            if(gamepad1.dpad_down)
+            if(gamepad1.dpad_down && pressed == false) {
                 alliance *= -1;
-
+                pressed = true;
+            }
+            else
+                pressed = false;
             if(alliance == 1)
                 telemetry.addData("Alliance: ","Blue");
             else

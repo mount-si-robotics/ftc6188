@@ -42,7 +42,6 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -60,12 +59,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "AutonomousBlue")
 @Disabled
-public class AutonomousBlue extends LinearOpMode {
+public class AutonomousCombined extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
+    private int alliance = 1;
 
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
@@ -123,18 +123,25 @@ public class AutonomousBlue extends LinearOpMode {
         while(!isStarted())
         {
             telemetry.addData("angle", MrGyro.getHeading());
-            telemetry.update();
+            if(gamepad1.dpad_down)
+                alliance *= -1;
+
+            if(alliance == 1)
+                telemetry.addData("Alliance: ","Blue");
+            else
+                telemetry.addData("Alliance: ", "Red");
+                telemetry.update();
         }
         runtime.reset();
         MrGyro.resetZAxisIntegrator();
-        moveRobot2(52 ,.2f);
+        moveRobot2(52 * alliance,.2f);
         turnUsingRightMotors(70,.1f,0);
-        moveRobot2(-6 ,.2f);
+        moveRobot2(-6 * alliance,.2f);
         turnUsingRightMotors(45,.05f,0);
         searchForWhiteLine(.1f);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
-            moveRobot2(-2 , .1f, 45);
+            moveRobot2(-2 * alliance, .1f, 45);
             pushButton();
             Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
             if(hsvValues[0] > 150)
@@ -144,7 +151,7 @@ public class AutonomousBlue extends LinearOpMode {
             }
         }
         else {
-            moveRobot2(2 , .1f, 45);
+            moveRobot2(2 * alliance, .1f, 45);
             pushButton();
             Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             if(hsvValues[0] > 150)
@@ -154,11 +161,11 @@ public class AutonomousBlue extends LinearOpMode {
             }
         }
 
-        moveRobot2(27 ,.2f,45);
+        moveRobot2(27 * alliance,.2f,45);
         searchForWhiteLine(.1f);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
-            moveRobot2(-2 , .1f, 45);
+            moveRobot2(-2 * alliance, .1f, 45);
             pushButton();
             Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
             if(hsvValues[0] > 150)
@@ -168,7 +175,7 @@ public class AutonomousBlue extends LinearOpMode {
             }
         }
         else {
-            moveRobot2(2 , .1f, 0);
+            moveRobot2(2 * alliance, .1f, 0);
             pushButton();
             Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             if(hsvValues[0] > 150)

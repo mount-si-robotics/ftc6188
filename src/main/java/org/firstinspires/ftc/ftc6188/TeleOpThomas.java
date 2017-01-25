@@ -98,9 +98,11 @@ public class TeleOpThomas extends OpMode
     public void init_loop() {
     }
 
+
     @Override
     public void start() {
         runtime.reset();
+        linSlide.setPower(0);
     }
 
     @Override
@@ -121,7 +123,23 @@ public class TeleOpThomas extends OpMode
         else
             linSlide.setPower(0);
 
-
+        /*if(gamepad1.dpad_up) {
+            liftMotor1.setPower(.1f);
+            liftMotor2.setPower(.1f);
+        }
+        else if (gamepad1.dpad_down)
+        {
+            liftMotor1.setPower(-.1f);
+            liftMotor2.setPower(-.1f);
+        }
+        else
+        {
+            liftMotor1.setPower(0);
+            liftMotor2.setPower(0);
+        }
+        telemetry.addData("inches motorLift1: ",liftMotor1.getCurrentPosition() / 1120 * (2.5 * Math.PI));
+        telemetry.addData("inches motorLift2: ",liftMotor2.getCurrentPosition() / 1120 * (2.5 * Math.PI));
+        telemetry.update();*/
 
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
@@ -145,6 +163,7 @@ public class TeleOpThomas extends OpMode
     @Override
     public void stop() {
     }
+
     double scaleInput(double dVal)  {
         double[] scaleArray = { 0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
                 0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00 };

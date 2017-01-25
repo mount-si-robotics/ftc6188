@@ -103,11 +103,6 @@ public class AutonomousCombined extends LinearOpMode {
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
 
-        linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        resetEncoders();
-        while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
-            linSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        checkEncoder();
         linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
 
@@ -116,10 +111,7 @@ public class AutonomousCombined extends LinearOpMode {
         while(MrGyro.isCalibrating())
         {
         }
-
-
-
-
+        //set up the robot depending on the situation
         while(!isStarted())
         {
             telemetry.addData("angle", MrGyro.getHeading());
@@ -134,53 +126,73 @@ public class AutonomousCombined extends LinearOpMode {
         }
         runtime.reset();
         MrGyro.resetZAxisIntegrator();
+        //moves the robot 52 inches at 20% power
         moveRobot2(52 * alliance,.2f);
+        //turns robot to 70 degrees at 10% power and 0 tolerance
         turnUsingRightMotors(70,.1f,0);
+        //move robot 6 inches backwards at 20% power
         moveRobot2(-6 * alliance,.2f);
+        //turn robot 45 degrees at 5% power and 0 tolerance
         turnUsingRightMotors(45,.05f,0);
+        //search for white line using optical distance sensor at 10% power
         searchForWhiteLine(.1f);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
+            //move robot backwards 2 inches at 10% power at 45 degrees
             moveRobot2(-2 * alliance, .1f, 45);
+            //pushes beacon at 50% power over 1.6 seconds
             pushButton();
             Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
             if(hsvValues[0] > 150)
             {
+                //waits 5 seconds
                 sleep(5000);
+                //pushes beacon at 50% power over 1.6 seconds
                 pushButton();
             }
         }
         else {
+            //move robot 2 inches at 10% power at 45 degrees
             moveRobot2(2 * alliance, .1f, 45);
+            //pushes beacon at 50% power over 1.6 seconds
             pushButton();
             Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             if(hsvValues[0] > 150)
             {
+                //waits 5 seconds
                 sleep(5000);
+                //pushes beacon at 50% power over 1.6 seconds
                 pushButton();
             }
         }
-
+        //moves robot 27 inches at 20% power at 45 degrees
         moveRobot2(27 * alliance,.2f,45);
+        //search for white line using optical distance sensor at 10% power
         searchForWhiteLine(.1f);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         if(hsvValues[0] > 150) {
+            //move robot backwards 2 inches at 10% power at 45 degrees
             moveRobot2(-2 * alliance, .1f, 45);
+            //pushes beacon at 50% power over 1.6 seconds
             pushButton();
             Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
             if(hsvValues[0] > 150)
             {
                 sleep(5000);
+                //pushes beacon at 50% power over 1.6 seconds
                 pushButton();
             }
         }
         else {
+            //move robot 2 inches at 10% power at 45 degrees
             moveRobot2(2 * alliance, .1f, 0);
+            //pushes beacon at 50% power over 1.6 seconds
             pushButton();
             Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             if(hsvValues[0] > 150)
             {
                 sleep(5000);
+                //pushes beacon at 50% power over 1.6 seconds
                 pushButton();
             }
         }

@@ -182,6 +182,7 @@ public class AutonomousCombined extends LinearOpMode {
                 //pushes beacon at 50% power over 1.6 seconds
                 pushButton();
             }
+
         }
         else {
             //move robot 2 inches at 10% power at 45 degrees
@@ -196,6 +197,10 @@ public class AutonomousCombined extends LinearOpMode {
                 pushButton();
             }
         }
+        //moves robot 18 inches at 20% at 45 degrees
+        moveRobot2(18 * alliance,.2f,45);
+        //turns robot to 0 degrees at 10%power
+        turn(0,.1f);
 
     }
     public void pushButton()
@@ -308,7 +313,7 @@ public class AutonomousCombined extends LinearOpMode {
         setMotorSpeed(0);
         runEncoders();
     }
-    /*public void driveDistanceFromWallToWhiteLine(float speed, float targetDistance)
+    /*public void drivingDistanceFromWallUntilHittingWhiteLine(float speed, float targetDistance)
     {
         double startTime = runtime.time();
         float distanceError;

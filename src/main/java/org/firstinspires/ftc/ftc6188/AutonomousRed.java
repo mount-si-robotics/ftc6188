@@ -117,6 +117,7 @@ public class AutonomousRed extends LinearOpMode {
         while(!opModeIsActive())
         {
             telemetry.addData("angle", MrGyro.getHeading());
+            telemetry.update();
         }
         waitForStart();
         runtime.reset();
@@ -125,51 +126,60 @@ public class AutonomousRed extends LinearOpMode {
         moveRobot2(6,.2f);
         turnUsingRightMotors(0,.05f,0);
         searchForWhiteLine(.1f);
-        Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
-        if(hsvValues[0] > 150)
-            moveRobot2(2,.1f,0);
-        else
-            moveRobot2(-2,.1f,0);
-        linSlide.setPower(.5f);
-        sleep(800);
-        linSlide.setPower(-.5f);
-        sleep(800);
-        linSlide.setPower(0);
         Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        if(hsvValues[0] > 150)
-        {
-            sleep(5000);
-            linSlide.setPower(.5f);
-            sleep(800);
-            linSlide.setPower(-.5f);
-            sleep(800);
-            linSlide.setPower(0);
+        if(hsvValues[0] > 150) {
+            moveRobot2(2, .1f, 0);
+            pushButton();
+            Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
+            if(hsvValues[0] > 150)
+            {
+                sleep(5000);
+                pushButton();
+            }
+        }
+        else {
+            moveRobot2(-2, .1f, 0);
+            pushButton();
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if(hsvValues[0] > 150)
+            {
+                sleep(5000);
+                pushButton();
+            }
         }
 
-
-        moveRobot2(-27,.2f,0);
+        moveRobot2(27,.2f,0);
         searchForWhiteLine(.1f);
-        Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
-        if(hsvValues[0] > 150)
-            moveRobot2(2,.1f,0);
-        else
-            moveRobot2(-2,.1f,0);
+        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+        if(hsvValues[0] > 150) {
+            moveRobot2(2, .1f, 0);
+            pushButton();
+            Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
+            if(hsvValues[0] > 150)
+            {
+                sleep(5000);
+                pushButton();
+            }
+        }
+        else {
+            moveRobot2(-2, .1f, 0);
+            pushButton();
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if(hsvValues[0] > 150)
+            {
+                sleep(5000);
+                pushButton();
+            }
+        }
+
+    }
+    public void pushButton()
+    {
         linSlide.setPower(.5f);
         sleep(800);
         linSlide.setPower(-.5f);
         sleep(800);
         linSlide.setPower(0);
-        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        if(hsvValues[0] > 150)
-        {
-            sleep(5000);
-            linSlide.setPower(.5f);
-            sleep(800);
-            linSlide.setPower(-.5f);
-            sleep(800);
-            linSlide.setPower(0);
-        }
-
     }
     public void linearSlider(double distance, float speed)
     {

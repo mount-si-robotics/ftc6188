@@ -105,7 +105,7 @@ public class AutonomousCombined extends LinearOpMode {
 
         linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
-
+        //ToDo: 1: select start pos, 2: shoot/dont shoot, 3: cap ball/ no cap ball, 4: park center/ramp, 5: beacons or balls, 6: delay x seconds
 
         MrGyro.calibrate();
         while(MrGyro.isCalibrating())

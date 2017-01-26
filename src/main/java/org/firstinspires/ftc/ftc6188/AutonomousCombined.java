@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -74,10 +75,14 @@ public class AutonomousCombined extends LinearOpMode {
     private DcMotor motorRightBack;
     private DcMotor ballLauncher;
     private DcMotor linSlide;
+
+    //private UltrasonicSensor USensor;
+
     private ColorSensor adafruitColor;
 
     private OpticalDistanceSensor optBack;
     private OpticalDistanceSensor optFront;
+
     private GyroSensor sensorType;
     private ModernRoboticsI2cGyro MrGyro;
 
@@ -97,6 +102,8 @@ public class AutonomousCombined extends LinearOpMode {
 
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
+
+        //USensor = hardwareMap.ultrasonicSensor.get("USensor");
 
         adafruitColor = hardwareMap.colorSensor.get("MRCSensor");
 

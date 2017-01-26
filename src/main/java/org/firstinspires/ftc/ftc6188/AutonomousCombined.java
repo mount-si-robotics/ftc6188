@@ -44,6 +44,7 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -74,8 +75,9 @@ public class AutonomousCombined extends LinearOpMode {
     private DcMotor ballLauncher;
     private DcMotor linSlide;
     private ColorSensor adafruitColor;
-    private ColorSensor modernRobotics;
-    private OpticalDistanceSensor OpticalDistance;
+
+    private OpticalDistanceSensor optBack;
+    private OpticalDistanceSensor optFront;
     private GyroSensor sensorType;
     private ModernRoboticsI2cGyro MrGyro;
 
@@ -97,8 +99,10 @@ public class AutonomousCombined extends LinearOpMode {
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
         adafruitColor = hardwareMap.colorSensor.get("MRCSensor");
-        modernRobotics = hardwareMap.colorSensor.get("MRCSensor2");
-        OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
+
+        optFront = hardwareMap.opticalDistanceSensor.get("ODSensorFront");
+        optBack = hardwareMap.opticalDistanceSensor.get("ODSensorBack");
+
         sensorType = hardwareMap.gyroSensor.get("GSensor");
 
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
@@ -139,68 +143,58 @@ public class AutonomousCombined extends LinearOpMode {
         //turn robot 45 degrees at 5% power and 0 tolerance
         turnUsingRightMotors(45,.05f,0);
         //search for white line using optical distance sensor at 10% power
-        searchForWhiteLine(.1f * alliance);
-        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        if(hsvValues[0] > 150) {
-            //move robot backwards 2 inches at 10% power at 45 degrees
-            moveRobot2(-2 * alliance, .1f, 45);
-            //pushes beacon at 50% power over 1.6 seconds
-            pushButton();
-            Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
-            if(hsvValues[0] > 150)
-            {
-                //waits 5 seconds
-                sleep(5000);
-                //pushes beacon at 50% power over 1.6 seconds
-                pushButton();
-            }
-        }
-        else {
-            //move robot 2 inches at 10% power at 45 degrees
-            moveRobot2(2 * alliance, .1f, 45);
-            //pushes beacon at 50% power over 1.6 seconds
-            pushButton();
+        for(int i = 0; i < 2; i++) {
+            //searches for white line at 10% power with the back or front optical distance sensor depending on alliance
+            if (alliance == 1)
+                searchForWhiteLine(.1f * alliance, optFront);
+            else
+                searchForWhiteLine(.1f * alliance, optBack);
             Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] > 150)
-            {
-                //waits 5 seconds
-                sleep(5000);
-                //pushes beacon at 50% power over 1.6 seconds
-                pushButton();
-            }
-        }
-        //moves robot 27 inches at 20% power at 45 degrees
-        moveRobot2(27 * alliance,.2f,45);
-        //search for white line using optical distance sensor at 10% power
-        searchForWhiteLine(.1f * alliance);
-        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        if(hsvValues[0] > 150) {
-            //move robot backwards 2 inches at 10% power at 45 degrees
-            moveRobot2(-2 * alliance, .1f, 45);
-            //pushes beacon at 50% power over 1.6 seconds
-            pushButton();
-            Color.RGBToHSV(modernRobotics.red() * 8, modernRobotics.green() * 8, modernRobotics.blue() * 8, hsvValues);
-            if(hsvValues[0] > 150)
-            {
-                sleep(5000);
-                //pushes beacon at 50% power over 1.6 seconds
-                pushButton();
-            }
+            if (hsvValues[0] > 150) {
+                if (alliance == 1) {
+                    pushButton();
+                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                    if (hsvValues[0] < 150) {
+                        sleep(4000);
+                        pushButton();
+                    }
 
-        }
-        else {
-            //move robot 2 inches at 10% power at 45 degrees
-            moveRobot2(2 * alliance, .1f, 0);
-            //pushes beacon at 50% power over 1.6 seconds
-            pushButton();
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] > 150)
-            {
-                sleep(5000);
-                //pushes beacon at 50% power over 1.6 seconds
-                pushButton();
+                } else {
+                    //searches for white line at 10% power with the front optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optFront);
+                    pushButton();
+                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                    if (hsvValues[0] > 150) {
+                        sleep(4000);
+                        pushButton();
+                    }
+                }
+            } else {
+                if (alliance == 1) {
+                    //searches for white line at 10% power with the back optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optBack);
+                    pushButton();
+                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                    if (hsvValues[0] < 150) {
+                        sleep(4000);
+                        pushButton();
+                    }
+
+                } else {
+                    pushButton();
+                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                    if (hsvValues[0] > 150) {
+                        sleep(4000);
+                        pushButton();
+                    }
+                }
             }
+            //moves robot 27 inches at 20% power at 45 degrees in the first iteration
+            if(i == 0)
+                moveRobot2(27, .2f, 45);
         }
+
+
         //moves robot 18 inches at 20% at 45 degrees
         moveRobot2(18 * alliance,.2f,45);
         //turns robot to 0 degrees at 10%power
@@ -597,14 +591,14 @@ public class AutonomousCombined extends LinearOpMode {
         setMotorSpeed(0);
     }
 
-    public void searchForWhiteLine(float speed)
+    public void searchForWhiteLine(float speed, OpticalDistanceSensor optSensor)
     {
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(OpticalDistance.getRawLightDetected() < .2
+        while(optSensor.getRawLightDetected() < .2
                 && runtime.time() < startTime +4)
         {
-            telemetry.addData("lightBack", OpticalDistance.getRawLightDetected());
+            telemetry.addData("lightBack", optSensor.getRawLightDetected());
         }
         setMotorSpeed(0);
     }

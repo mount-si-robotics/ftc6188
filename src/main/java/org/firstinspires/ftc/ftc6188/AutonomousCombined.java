@@ -34,7 +34,9 @@ package org.firstinspires.ftc.ftc6188;
 
 import android.graphics.Color;
 
+import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -59,15 +61,20 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "AutonomousBlue")
-@Disabled
-public class AutonomousCombined extends LinearOpMode {
+@Autonomous(name = "Autonomous")
+public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButtons {
 
     private ElapsedTime runtime = new ElapsedTime();
     public final float CIRCUMFENCE = (float)(4.00 * Math.PI);
     public final int ENCODERTICKS = 1120;
     public final float GEARRATIO = .5f;
-    private int alliance = 1;
+    private int alliance = -1;
+    boolean isFar = false;
+    boolean shoot = true;
+    boolean goCapBall = true;
+    boolean parkCenter = true;
+    boolean goBeacons = true;
+    int delay = 0;
 
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
@@ -76,7 +83,7 @@ public class AutonomousCombined extends LinearOpMode {
     private DcMotor ballLauncher;
     private DcMotor linSlide;
 
-    //private UltrasonicSensor USensor;
+    private ModernRoboticsI2cRangeSensor USensor;
 
     private ColorSensor adafruitColor;
 
@@ -103,7 +110,7 @@ public class AutonomousCombined extends LinearOpMode {
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
-        //USensor = hardwareMap.ultrasonicSensor.get("USensor");
+        USensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "USensor");
 
         adafruitColor = hardwareMap.colorSensor.get("MRCSensor");
 
@@ -123,97 +130,108 @@ public class AutonomousCombined extends LinearOpMode {
         {
         }
         //set up the robot depending on the situation
-        boolean pressed = false;
-        while(!isStarted())
-        {
-            telemetry.addData("angle", MrGyro.getHeading());
-            if(gamepad1.dpad_down && pressed == false) {
-                alliance *= -1;
-                pressed = true;
-            }
-            else
-                pressed = false;
-            if(alliance == 1)
-                telemetry.addData("Alliance: ","Blue");
-            else
-                telemetry.addData("Alliance: ", "Red");
-                telemetry.update();
+        /*FtcValueMenu menu = new FtcValueMenu("Alliance Blue: ", null, this, -1, 1, 2, -1, "%.2");
+        FtcValueMenu menu2 = new FtcValueMenu("Delay seconds: ", menu, this, 0,15,.5,0, "%.2f");
+        menu.setChildMenu(menu2);
+        FtcValueMenu menu3 = new FtcValueMenu("Position Far: ", menu2, this, -1,1,2,-1,"%.2f");
+        menu2.setChildMenu(menu3);
+        FtcMenu.setOpMode(this);
+        FtcMenu.walkMenuTree(menu);
+        alliance =(int) menu.getCurrentValue();
+        delay = (int)(menu2.getCurrentValue() * 1000);
+        if(menu3.getCurrentValue() == 1)
+            isFar = true;*/
+        while (!isStarted()) {
+            telemetry.addData("Angle ", MrGyro.getHeading());
+            telemetry.addData("Alliance ",alliance);
+            telemetry.addData("Delay ", delay/1000 + " seconds");
+            telemetry.addData("Start Pos Far ", isFar);
+            telemetry.update();
         }
         runtime.reset();
         MrGyro.resetZAxisIntegrator();
+        sleep(delay);
         //moves the robot 52 inches at 20% power
-        moveRobot2(52 * alliance,.2f);
+        moveRobot2(68 * alliance,.3f);
         //turns robot to 70 degrees at 10% power and 0 tolerance
-        turnUsingRightMotors(70,.1f,0);
-        //move robot 6 inches backwards at 20% power
-        moveRobot2(-6 * alliance,.2f);
+        //turnUsingRightMotors(80,.1f,0);
+        //move robot 6 inches backwards at 10% power
+        //senseWall(.06f * alliance,20);
         //turn robot 45 degrees at 5% power and 0 tolerance
-        turnUsingRightMotors(45,.05f,0);
+        turnUsingRightMotors(35,.07f,0);
+        if (alliance == 1)
+            searchForWhiteLine(-.1f * alliance, optFront);
+        else
+            searchForWhiteLine(-.1f * alliance, optBack);
         //search for white line using optical distance sensor at 10% power
         for(int i = 0; i < 2; i++) {
             //searches for white line at 10% power with the back or front optical distance sensor depending on alliance
-            if (alliance == 1)
-                searchForWhiteLine(.1f * alliance, optFront);
-            else
-                searchForWhiteLine(.1f * alliance, optBack);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if (hsvValues[0] > 150) {
-                if (alliance == 1) {
+            if(i == 1) {
+                if (alliance == 1)
+                    searchForWhiteLine(.1f * alliance, optFront);
+                else
+                    searchForWhiteLine(.1f * alliance, optBack);
+            }
+           if (alliance == 1)
+            {
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if(hsvValues[0] > 150)
                     pushButton();
-                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                    if (hsvValues[0] < 150) {
-                        sleep(4000);
-                        pushButton();
-                    }
-
-                } else {
+                else
+                {
                     //searches for white line at 10% power with the front optical distance sensor
                     searchForWhiteLine(.1f * alliance, optFront);
                     pushButton();
-                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                    if (hsvValues[0] > 150) {
-                        sleep(4000);
-                        pushButton();
-                    }
                 }
-            } else {
-                if (alliance == 1) {
-                    //searches for white line at 10% power with the back optical distance sensor
-                    searchForWhiteLine(.1f * alliance, optBack);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] < 150) {
+                    sleep(4000);
                     pushButton();
-                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                    if (hsvValues[0] < 150) {
-                        sleep(4000);
-                        pushButton();
-                    }
-
-                } else {
+                }
+            }
+            else
+            {
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("%.2f",hsvValues[0]);
+                sleep(500);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("%.2f",hsvValues[0]);
+                if(hsvValues[0] < 150)
+                  pushButton();
+                else
+                {
+                    //searches for white line at 10% power with the front optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optFront);
                     pushButton();
-                    Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                    if (hsvValues[0] > 150) {
-                        sleep(4000);
-                        pushButton();
-                    }
+                }
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] > 150)
+                {
+                    sleep(4000);
+                    pushButton();
                 }
             }
             //moves robot 27 inches at 20% power at 45 degrees in the first iteration
-            if(i == 0)
-                moveRobot2(27, .2f, 45);
+            if(i == 0) {
+                moveRobot2(27 * alliance, .3f, 37);
+                turnUsingRightMotors(35,.04f,0);
+
+            }
         }
 
 
         //moves robot 18 inches at 20% at 45 degrees
-        moveRobot2(18 * alliance,.2f,45);
+        //moveRobot2(18 * alliance,.2f,35);
         //turns robot to 0 degrees at 10%power
-        turn(0,.1f);
+        //turn(0,.1f);
 
     }
     public void pushButton()
     {
-        linSlide.setPower(.5f);
-        sleep(800);
         linSlide.setPower(-.5f);
-        sleep(800);
+        sleep(1600);
+        linSlide.setPower(.5f);
+        sleep(1600);
         linSlide.setPower(0);
     }
     public void linearSlider(double distance, float speed)
@@ -275,15 +293,15 @@ public class AutonomousCombined extends LinearOpMode {
         int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
         int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
 
-        motorLeftBack.setTargetPosition(PositionTarget1);
-        motorRightFront.setTargetPosition(PositionTarget2);
-        motorRightBack.setTargetPosition(PositionTarget3);
-        motorLeftFront.setTargetPosition(PositionTarget4);
+        //motorLeftBack.setTargetPosition(PositionTarget1);
+       // motorRightFront.setTargetPosition(PositionTarget2);
+       // motorRightBack.setTargetPosition(PositionTarget3);
+        //motorLeftFront.setTargetPosition(PositionTarget4);
 
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
-        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
+        while (motorLeftFront.getCurrentPosition() < PositionTarget1 &&  runtime.time() < startTime+6 && opModeIsActive()) {
 
             currentheading = -MrGyro.getIntegratedZValue();
             headingerror = targetAngle - currentheading;
@@ -318,42 +336,48 @@ public class AutonomousCombined extends LinearOpMode {
         setMotorSpeed(0);
         runEncoders();
     }
-    /*public void drivingDistanceFromWallUntilHittingWhiteLine(float speed, float targetDistance)
-    {
+    public void drivingDistanceFromWallUntilHittingWhiteLine(float speed, float targetDistance, OpticalDistanceSensor optSensor) {
         double startTime = runtime.time();
         float distanceError;
         float currentDistance;
-        float driveConstant= .003f;
+        float driveConstant = .001f;
         float midPower = speed;
         float driveSteering;
-        float leftPower,rightPower;
+        float leftPower, rightPower;
 
-        while(OpticalDistance.getRawLightDetected() < .2
-                && runtime.time() < startTime +4) {
-            currentDistance = USensor.getUltrasonicLevel();
+        while (optSensor.getRawLightDetected() < .2
+                && runtime.time() < startTime + 6 && opModeIsActive()) {
+            currentDistance =(float) USensor.cmUltrasonic();
 
             distanceError = targetDistance - currentDistance;
             driveSteering = distanceError * driveConstant;
-            if(speed < 0)
-                driveSteering *=-1;
+            if (speed < 0)
+                driveSteering *= -1;
             leftPower = midPower + driveSteering;
-            if(leftPower > 1)
+            if (leftPower > 1)
                 leftPower = 1;
-            if(leftPower < 0)
+            if (leftPower < 0)
                 leftPower = 0;
             rightPower = midPower - driveSteering;
-            if(rightPower > 1)
+            if (rightPower > 1)
                 rightPower = 1;
-            if(rightPower < 0)
+            if (rightPower < 0)
                 rightPower = 0;
             motorLeftBack.setPower(leftPower);
             motorLeftFront.setPower(leftPower);
             motorRightBack.setPower(rightPower);
             motorRightFront.setPower(rightPower);
+            telemetry.addData("leftPower",
+                    leftPower);
+            telemetry.addData("rightPower",
+                    rightPower);
+            telemetry.addData("distance cm: ",USensor.cmUltrasonic());
+            telemetry.update();
 
 
         }
-    }*/
+        setMotorSpeed(0);
+    }
     public void moveRobot2(double distance, float speed, int targetAngle) {
         sleep(100);
         double startTime = runtime.time();
@@ -377,7 +401,7 @@ public class AutonomousCombined extends LinearOpMode {
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
-        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6) {
+        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6 && opModeIsActive()) {
 
             currentheading = -MrGyro.getIntegratedZValue();
 
@@ -496,10 +520,10 @@ public class AutonomousCombined extends LinearOpMode {
         float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         while(hsvValues[0]<150 && runtime.time() < startTime+waitTime)
         {
-            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);
             telemetry.addData("startTime", startTime);
             telemetry.addData("timer", runtime.time());
@@ -512,10 +536,10 @@ public class AutonomousCombined extends LinearOpMode {
         float hsvValues[] = {0F,0F,0F};
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
         while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
         {
-            Color.RGBToHSV((modernRobotics.red() * 255) / 800, (modernRobotics.green() * 255) / 800, (modernRobotics.blue() * 255) / 800, hsvValues);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
             telemetry.addData("Hue", hsvValues[0]);
             telemetry.addData("startTime", startTime);
             telemetry.addData("timer", runtime.time());
@@ -529,7 +553,7 @@ public class AutonomousCombined extends LinearOpMode {
         int tollerance = 1;
         double startTime = runtime.time();
 
-        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +6) {
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +6 && opModeIsActive()) {
             currentheading = -MrGyro.getIntegratedZValue();
             if(Math.abs(degrees - currentheading) <25)
                 speed  = .07f;
@@ -575,7 +599,7 @@ public class AutonomousCombined extends LinearOpMode {
         int currentheading = -MrGyro.getIntegratedZValue();
         double startTime = runtime.time();
 
-        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +6 && opModeIsActive()) {
             currentheading = -MrGyro.getIntegratedZValue();
             if(Math.abs(degrees - currentheading) <25)
                 speed  = .07f;
@@ -602,22 +626,26 @@ public class AutonomousCombined extends LinearOpMode {
     {
         double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(optSensor.getRawLightDetected() < .2
-                && runtime.time() < startTime +4)
+        while(optSensor.getRawLightDetected() < .5
+                && runtime.time() < startTime +4 && opModeIsActive())
         {
             telemetry.addData("lightBack", optSensor.getRawLightDetected());
         }
         setMotorSpeed(0);
     }
-        /*public void senseWall(float speed, int distance)
+        public void senseWall(float speed, int distance)
     {
+        double startTime = runtime.time();
         setMotorSpeed(speed);
-        while(USensor.getUltrasonicLevel()) > distance)
+
+        while(USensor.cmUltrasonic() > distance && runtime.time() < startTime +10 && opModeIsActive())
         {
-            telemetry.addData("distance ", USensor.getUltrasonicLevel()));
+
+            telemetry.addData("distance ", USensor.cmUltrasonic());
+            telemetry.update();
         }
         setMotorSpeed(0);
-    }*/
+    }
 
     public void turnLeft(float speed)
     {
@@ -633,5 +661,25 @@ public class AutonomousCombined extends LinearOpMode {
         motorRightBack.setPower(-speed);
         motorRightFront.setPower(-speed);
         motorLeftBack.setPower(speed);
+    }
+
+    @Override
+    public boolean isMenuUpButton() {
+        return false;
+    }
+
+    @Override
+    public boolean isMenuDownButton() {
+        return false;
+    }
+
+    @Override
+    public boolean isMenuEnterButton() {
+        return false;
+    }
+
+    @Override
+    public boolean isMenuBackButton() {
+        return false;
     }
 }

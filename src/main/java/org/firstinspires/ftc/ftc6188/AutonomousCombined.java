@@ -42,6 +42,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
@@ -70,10 +72,10 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     public final float GEARRATIO = .5f;
     private int alliance = -1;
     boolean isFar = false;
-    boolean shoot = true;
-    boolean goCapBall = true;
-    boolean parkCenter = true;
-    boolean goBeacons = true;
+    boolean shoot = false;
+    boolean goCapBall = false;
+    boolean parkCenter = false;
+    boolean goBeacons = false;
     int delay = 0;
 
     private DcMotor motorLeftFront;
@@ -82,6 +84,8 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     private DcMotor motorRightBack;
     private DcMotor ballLauncher;
     private DcMotor linSlide;
+    /*private DcMotor lift1;
+    private DcMotor lift2;*/
 
     private ModernRoboticsI2cRangeSensor USensor;
 
@@ -92,6 +96,8 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
 
     private GyroSensor sensorType;
     private ModernRoboticsI2cGyro MrGyro;
+
+    private DeviceInterfaceModule cdim;
 
     @Override
     public void runOpMode() {
@@ -107,6 +113,9 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         ballLauncher = hardwareMap.dcMotor.get("Launcher");
         linSlide = hardwareMap.dcMotor.get("linSlide");
 
+        /*lift1 = hardwareMap.dcMotor.get("Lift1");
+        lift2 = hardwareMap.dcMotor.get("Lift2");*/
+
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
 
@@ -119,11 +128,13 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
 
         sensorType = hardwareMap.gyroSensor.get("GSensor");
 
+        cdim = hardwareMap.deviceInterfaceModule.get("cdim");
+
         MrGyro = (ModernRoboticsI2cGyro) sensorType;
 
         linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
-        //ToDo: 1: select start pos, 2: shoot/dont shoot, 3: cap ball/ no cap ball, 4: park center/ramp, 5: beacons or balls, 6: delay x seconds
+        //ToDo: 1: select start pos, 2: shoot/dont shoot, 3: cap ball/ no cap ball, 4: park center/ramp, 5: beacons or balls
 
         MrGyro.calibrate();
         while(MrGyro.isCalibrating())
@@ -131,26 +142,44 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         }
         //set up the robot depending on the situation
         /*FtcValueMenu menu = new FtcValueMenu("Alliance Blue: ", null, this, -1, 1, 2, -1, "%.2");
-        FtcValueMenu menu2 = new FtcValueMenu("Delay seconds: ", menu, this, 0,15,.5,0, "%.2f");
-        menu.setChildMenu(menu2);
-        FtcValueMenu menu3 = new FtcValueMenu("Position Far: ", menu2, this, -1,1,2,-1,"%.2f");
+        FtcValueMenu menu2 = new FtcValueMenu("Position Far: ", menu, this, -1,1,2,-1,"%.2f");
+        menu2.setChildMenu(menu2);
+        FtcValueMenu menu3 = new FtcValueMenu("Cap Ball: ", menu2, this, -1,1,2,-1,"%.2f");
         menu2.setChildMenu(menu3);
+        FtcValueMenu menu4 = new FtcValueMenu("Beacons: ", menu3, this, -1,1,2,-1,"%.2f");
+        menu2.setChildMenu(menu4);
+        FtcValueMenu menu5 = new FtcValueMenu("Delay seconds: ", menu4, this, 0,15,.5,0, "%.2f");
+        menu.setChildMenu(menu5);
         FtcMenu.setOpMode(this);
         FtcMenu.walkMenuTree(menu);
         alliance =(int) menu.getCurrentValue();
-        delay = (int)(menu2.getCurrentValue() * 1000);
+        delay = (int)(menu5.getCurrentValue() * 1000);
+        if(menu2.getCurrentValue() == 1)
+            isFar = true;
         if(menu3.getCurrentValue() == 1)
-            isFar = true;*/
+            goCapBall = true;
+        if(menu4.getCurrentValue() == 1)
+            goBeacons = true;*/
+
         while (!isStarted()) {
             telemetry.addData("Angle ", MrGyro.getHeading());
             telemetry.addData("Alliance ",alliance);
-            telemetry.addData("Delay ", delay/1000 + " seconds");
             telemetry.addData("Start Pos Far ", isFar);
+            telemetry.addData("Cap Ball at End of Beacons", goCapBall);
+            telemetry.addData("beacons over Cap at start",goBeacons);
+            telemetry.addData("Delay ", delay/1000 + " seconds");
             telemetry.update();
         }
         runtime.reset();
         MrGyro.resetZAxisIntegrator();
         sleep(delay);
+        /*
+        if(!goBeacons)
+        {
+            moveRobot2(68,.2f);
+        }
+        else
+         */
         //moves the robot 52 inches at 20% power
         moveRobot2(68 * alliance,.3f);
         //turns robot to 70 degrees at 10% power and 0 tolerance
@@ -192,10 +221,8 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
             else
             {
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                DbgLog.msg("%.2f",hsvValues[0]);
                 sleep(500);
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                DbgLog.msg("%.2f",hsvValues[0]);
                 if(hsvValues[0] < 150)
                   pushButton();
                 else
@@ -224,15 +251,33 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         //moveRobot2(18 * alliance,.2f,35);
         //turns robot to 0 degrees at 10%power
         //turn(0,.1f);
+        /*if(goCapBall)
+        {
+            moveRobot2(60,.2f);
+        }*/
+        turnOffLight();
+
+    }
+    public void turnOffLight()
+    {
+        cdim.setDigitalChannelMode(7, DigitalChannelController.Mode.OUTPUT);
+        cdim.setDigitalChannelState(7, false);
 
     }
     public void pushButton()
     {
-        linSlide.setPower(-.5f);
+        //v.1
+        /*linSlide.setPower(-.5f);
         sleep(1600);
         linSlide.setPower(.5f);
         sleep(1600);
-        linSlide.setPower(0);
+        linSlide.setPower(0);*/
+        //v.2
+        float range = (float)USensor.cmUltrasonic();
+        if(range < 13) {
+            linearSlider(-range / 2.54, .5f);
+            linearSlider(range / 2.54, .5f);
+        }
     }
     public void linearSlider(double distance, float speed)
     {
@@ -242,7 +287,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         linSlide.setTargetPosition(PositionTarget1);
         linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         linSlide.setPower(speed);
-        while (linSlide.isBusy()) {
+        while (linSlide.isBusy() && opModeIsActive()) {
             telemetry.addData("angle",
                     MrGyro.getHeading());
 
@@ -293,15 +338,15 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
         int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
 
-        //motorLeftBack.setTargetPosition(PositionTarget1);
-       // motorRightFront.setTargetPosition(PositionTarget2);
-       // motorRightBack.setTargetPosition(PositionTarget3);
-        //motorLeftFront.setTargetPosition(PositionTarget4);
+        motorLeftBack.setTargetPosition(PositionTarget1);
+        motorRightFront.setTargetPosition(PositionTarget2);
+        motorRightBack.setTargetPosition(PositionTarget3);
+        motorLeftFront.setTargetPosition(PositionTarget4);
 
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
 
-        while (motorLeftFront.getCurrentPosition() < PositionTarget1 &&  runtime.time() < startTime+6 && opModeIsActive()) {
+        while (motorLeftFront.isBusy() &&  runtime.time() < startTime+6 && opModeIsActive()) {
 
             currentheading = -MrGyro.getIntegratedZValue();
             headingerror = targetAngle - currentheading;
@@ -335,48 +380,6 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         }
         setMotorSpeed(0);
         runEncoders();
-    }
-    public void drivingDistanceFromWallUntilHittingWhiteLine(float speed, float targetDistance, OpticalDistanceSensor optSensor) {
-        double startTime = runtime.time();
-        float distanceError;
-        float currentDistance;
-        float driveConstant = .001f;
-        float midPower = speed;
-        float driveSteering;
-        float leftPower, rightPower;
-
-        while (optSensor.getRawLightDetected() < .2
-                && runtime.time() < startTime + 6 && opModeIsActive()) {
-            currentDistance =(float) USensor.cmUltrasonic();
-
-            distanceError = targetDistance - currentDistance;
-            driveSteering = distanceError * driveConstant;
-            if (speed < 0)
-                driveSteering *= -1;
-            leftPower = midPower + driveSteering;
-            if (leftPower > 1)
-                leftPower = 1;
-            if (leftPower < 0)
-                leftPower = 0;
-            rightPower = midPower - driveSteering;
-            if (rightPower > 1)
-                rightPower = 1;
-            if (rightPower < 0)
-                rightPower = 0;
-            motorLeftBack.setPower(leftPower);
-            motorLeftFront.setPower(leftPower);
-            motorRightBack.setPower(rightPower);
-            motorRightFront.setPower(rightPower);
-            telemetry.addData("leftPower",
-                    leftPower);
-            telemetry.addData("rightPower",
-                    rightPower);
-            telemetry.addData("distance cm: ",USensor.cmUltrasonic());
-            telemetry.update();
-
-
-        }
-        setMotorSpeed(0);
     }
     public void moveRobot2(double distance, float speed, int targetAngle) {
         sleep(100);
@@ -436,40 +439,6 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         setMotorSpeed(0);
         runEncoders();
     }
-    public boolean MotorsBusy()
-    {
-        return motorLeftBack.isBusy() && motorLeftFront.isBusy() && motorRightBack.isBusy() && motorRightFront.isBusy();
-    }
-    public void resetEncoders()
-    {
-        motorLeftFront.setMode
-                (DcMotor.RunMode.STOP_AND_RESET_ENCODER
-                );
-        motorRightFront.setMode
-                (DcMotor.RunMode.STOP_AND_RESET_ENCODER
-                );
-        motorLeftBack.setMode
-                (DcMotor.RunMode.STOP_AND_RESET_ENCODER
-                );
-        motorRightBack.setMode
-                (DcMotor.RunMode.STOP_AND_RESET_ENCODER
-                );
-    }
-    public void stopEncoders()
-    {
-        motorLeftFront.setMode
-                (DcMotor.RunMode.RUN_WITHOUT_ENCODER
-                );
-        motorRightFront.setMode
-                (DcMotor.RunMode.RUN_WITHOUT_ENCODER
-                );
-        motorLeftBack.setMode
-                (DcMotor.RunMode.RUN_WITHOUT_ENCODER
-                );
-        motorRightBack.setMode
-                (DcMotor.RunMode.RUN_WITHOUT_ENCODER
-                );
-    }
     public void runEncoders()
     {
         motorLeftFront.setMode
@@ -495,11 +464,6 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         motorRightBack.setPower(speed);
     }
 
-    public void checkEncoder()
-    {
-        while(!motorLeftFront.getMode().equals(DcMotor.RunMode.STOP_AND_RESET_ENCODER))
-            resetEncoders();
-    }
     public void SetEncoderPositionToRun()
     {
         motorLeftFront.setMode
@@ -514,38 +478,6 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         motorRightBack.setMode
                 (DcMotor.RunMode.RUN_TO_POSITION
                 );
-    }
-    public void CheckBeaconForBlue( float speed, float waitTime)
-    {
-        float hsvValues[] = {0F,0F,0F};
-        double startTime = runtime.time();
-        setMotorSpeed(speed);
-        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]<150 && runtime.time() < startTime+waitTime)
-        {
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            telemetry.addData("Hue", hsvValues[0]);
-            telemetry.addData("startTime", startTime);
-            telemetry.addData("timer", runtime.time());
-            telemetry.update();
-        }
-        setMotorSpeed(0);
-    }
-    public void CheckBeaconForRed( float speed, float waitTime)
-    {
-        float hsvValues[] = {0F,0F,0F};
-        double startTime = runtime.time();
-        setMotorSpeed(speed);
-        Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-        while(hsvValues[0]>20 && runtime.time() < startTime+waitTime)
-        {
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            telemetry.addData("Hue", hsvValues[0]);
-            telemetry.addData("startTime", startTime);
-            telemetry.addData("timer", runtime.time());
-            telemetry.update();
-        }
-        setMotorSpeed(0);
     }
     public void turnBOR(int degres,float speed){turn(degres - MrGyro.getIntegratedZValue(),speed);}
     public void turn(int degrees, float speed) {
@@ -566,32 +498,6 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
                 turnRight(speed);
             else
                 turnLeft(speed);
-        }
-        setMotorSpeed(0);
-    }
-    public void turnUsingLeftMotors(int degrees, float speed, float tollerance) {
-        int currentheading = -MrGyro.getIntegratedZValue();
-        double startTime = runtime.time();
-
-        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4) {
-            currentheading = -MrGyro.getIntegratedZValue();
-            if(Math.abs(degrees - currentheading) <25)
-                speed  = .07f;
-            telemetry.addData("check",Math.abs(currentheading - degrees));
-            telemetry.addData("current heading", currentheading);
-            telemetry.addData("degrees",degrees);
-            telemetry.addData("speed", speed);
-            telemetry.update();
-            if(currentheading < degrees)
-            {
-                motorLeftFront.setPower(speed);
-                motorLeftBack.setPower(speed);
-            }
-            else
-            {
-                motorLeftFront.setPower(-speed);
-                motorLeftBack.setPower(-speed);
-            }
         }
         setMotorSpeed(0);
     }

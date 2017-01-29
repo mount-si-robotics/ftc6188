@@ -32,12 +32,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.ftc6188;
 
+import android.graphics.Color;
+
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -65,11 +72,22 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftFront;
     private DcMotor ballLauncher;
     private DcMotor linSlide;
-    private ColorSensor modernRobotics;
-    private ColorSensor modernRobotics2;
-    private OpticalDistanceSensor OpticalDistance;
-    private GyroSensor MrGyro;
+    /*private DcMotor lift1;
+    private DcMotor lift2;*/
 
+
+    private ModernRoboticsI2cRangeSensor USensor;
+
+    private ColorSensor adafruitColor;
+
+    private OpticalDistanceSensor optBack;
+    private OpticalDistanceSensor optFront;
+
+    private GyroSensor sensorType;
+
+    private DeviceInterfaceModule cdim;
+
+    private float[] hsvValues = {0,0,0};
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
@@ -81,10 +99,22 @@ public class TeleOpThomas extends OpMode
         ballLauncher = hardwareMap.dcMotor.get("Launcher");
         linSlide = hardwareMap.dcMotor.get("linSlide");
 
-        modernRobotics = hardwareMap.colorSensor.get("MRCSensor");
-        modernRobotics2 = hardwareMap.colorSensor.get("MRCSensor2");
-        OpticalDistance = hardwareMap.opticalDistanceSensor.get("ODSensor");
-        MrGyro = hardwareMap.gyroSensor.get("GSensor");
+        /*lift1 = hardwareMap.dcMotor.get("Lift1");
+        lift2 = hardwareMap.dcMotor.get("Lift2");*/
+
+        motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
+        motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
+
+        USensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "USensor");
+
+        adafruitColor = hardwareMap.colorSensor.get("MRCSensor");
+
+        optFront = hardwareMap.opticalDistanceSensor.get("ODSensorFront");
+        optBack = hardwareMap.opticalDistanceSensor.get("ODSensorBack");
+
+        sensorType = hardwareMap.gyroSensor.get("GSensor");
+
+        cdim = hardwareMap.deviceInterfaceModule.get("cdim");
 
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
@@ -92,6 +122,8 @@ public class TeleOpThomas extends OpMode
         motorRightFront.setDirection(DcMotor.Direction.FORWARD);
 
         linSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        turnOffLight();
     }
 
     @Override
@@ -122,6 +154,16 @@ public class TeleOpThomas extends OpMode
             linSlide.setPower(-.5);
         else
             linSlide.setPower(0);
+        if(gamepad1.x)
+        {
+            searchForWhiteLine(.2f,optFront);
+            pushButton();
+        }
+        else if(gamepad1.y)
+        {
+            searchForWhiteLine(-.2f,optBack);
+            pushButton();
+        }
 
         /*if(gamepad1.dpad_up) {
             liftMotor1.setPower(.1f);
@@ -181,5 +223,73 @@ public class TeleOpThomas extends OpMode
             dScale = scaleArray[index];
         }
         return dScale;
+    }
+    public void turnOffLight()
+    {
+        cdim.setDigitalChannelMode(7, DigitalChannelController.Mode.OUTPUT);
+        cdim.setDigitalChannelState(7, false);
+
+    }
+    public void pushButton()
+    {
+        //v.1
+        /*linSlide.setPower(-.5f);
+        sleep(1600);
+        linSlide.setPower(.5f);
+        sleep(1600);
+        linSlide.setPower(0);*/
+        //v.2
+        float range = (float)USensor.cmUltrasonic();
+        if(range < 13) {
+            linearSlider(-range / 2.54, .5f);
+            linearSlider(range / 2.54, .5f);
+        }
+        telemetry.addData("distance",range);
+        telemetry.update();
+    }
+    public boolean buttonsPressed()
+    {
+        return gamepad1.x && gamepad1.y && gamepad1.a && gamepad1.b && gamepad1.atRest() &&
+                gamepad1.dpad_down && gamepad1.dpad_right && gamepad1.dpad_up && gamepad1.dpad_left &&
+                 gamepad1.left_bumper && gamepad1.right_bumper;
+    }
+    public void linearSlider(double distance, float speed)
+    {
+        double ticksToInches = (1120 * 2) / (3.0/16*Math.PI);
+        int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
+
+        linSlide.setTargetPosition(PositionTarget1);
+        linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        linSlide.setPower(speed);
+        while (linSlide.isBusy() && !buttonsPressed()) {
+            telemetry.addData("ticks",
+                    linSlide.getCurrentPosition());
+
+            telemetry.update();
+        }
+        linSlide.setPower(0);
+        linSlide.setMode
+                (DcMotor.RunMode.RUN_USING_ENCODER
+                );
+    }
+    public void searchForWhiteLine(float speed, OpticalDistanceSensor optSensor)
+    {
+        double startTime = runtime.time();
+        motorLeftBack.setPower(speed);
+        motorLeftFront.setPower(speed);
+        motorRightBack.setPower(speed);
+        motorRightFront.setPower(speed);
+        while(optSensor.getRawLightDetected() < .5
+                && runtime.time() < startTime +4 && !buttonsPressed())
+        {
+            telemetry.addData("lightBack", optSensor.getRawLightDetected());
+        }
+        motorLeftBack.setPower(0);
+        motorLeftFront.setPower(0);
+        motorRightBack.setPower(0);
+        motorRightFront.setPower(0);
+        g
+        it commit -m "updates to menu and teleop"
+
     }
 }

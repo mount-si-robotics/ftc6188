@@ -135,6 +135,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
 
         linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         runEncoders();
+        turnOnLight();
         //ToDo: 1: select start pos, 2: shoot/dont shoot, 3: cap ball/ no cap ball, 4: park center/ramp, 5: beacons or balls
 
         MrGyro.calibrate();
@@ -182,7 +183,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         else
          */
         //moves the robot 52 inches at 20% power
-        moveRobot2(68 * alliance,.3f);
+        moveRobot2(67.5 * alliance,.3f);
         //turns robot to 70 degrees at 10% power and 0 tolerance
         //turnUsingRightMotors(80,.1f,0);
         //move robot 6 inches backwards at 10% power
@@ -215,15 +216,17 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
                 }
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
                 if (hsvValues[0] < 150) {
-                    sleep(4000);
+                    sleep(3000);
                     pushButton();
                 }
             }
             else
             {
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("1 %.2f",hsvValues[0]);
                 sleep(500);
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("2 %.2f",hsvValues[0]);
                 if(hsvValues[0] < 150)
                   pushButton();
                 else
@@ -233,19 +236,16 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
                     pushButton();
                 }
                 Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("3 %.2f",hsvValues[0]);
                 if (hsvValues[0] > 150)
                 {
-                    sleep(4000);
+                    sleep(3000);
                     pushButton();
                 }
             }
-            DbgLog.msg("%.2f",USensor.cmUltrasonic());
             //moves robot 27 inches at 20% power at 45 degrees in the first iteration
             if(i == 0) {
-                turnUsingRightMotors(PARALLELCLOSE,.04f,0);
-                moveRobot2(27 * alliance, .3f, PARALLELCLOSE);
-
-
+                moveRobot2(27 * alliance, .3f, 37);
             }
         }
 
@@ -265,6 +265,12 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     {
         cdim.setDigitalChannelMode(7, DigitalChannelController.Mode.OUTPUT);
         cdim.setDigitalChannelState(7, false);
+
+    }
+    public void turnOnLight()
+    {
+        cdim.setDigitalChannelMode(7, DigitalChannelController.Mode.OUTPUT);
+        cdim.setDigitalChannelState(7, true);
 
     }
     public void pushButton()

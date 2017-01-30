@@ -77,6 +77,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     boolean parkCenter = false;
     boolean goBeacons = false;
     int delay = 0;
+    private int PARALLELCLOSE = 35;
 
     private DcMotor motorLeftFront;
     private DcMotor motorLeftBack;
@@ -187,7 +188,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         //move robot 6 inches backwards at 10% power
         //senseWall(.06f * alliance,20);
         //turn robot 45 degrees at 5% power and 0 tolerance
-        turnUsingRightMotors(35,.07f,0);
+        turnUsingRightMotors(PARALLELCLOSE,.07f,0);
         if (alliance == 1)
             searchForWhiteLine(-.1f * alliance, optFront);
         else
@@ -238,10 +239,12 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
                     pushButton();
                 }
             }
+            DbgLog.msg("%.2f",USensor.cmUltrasonic());
             //moves robot 27 inches at 20% power at 45 degrees in the first iteration
             if(i == 0) {
-                moveRobot2(27 * alliance, .3f, 37);
-                turnUsingRightMotors(35,.04f,0);
+                turnUsingRightMotors(PARALLELCLOSE,.04f,0);
+                moveRobot2(27 * alliance, .3f, PARALLELCLOSE);
+
 
             }
         }
@@ -266,37 +269,50 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     }
     public void pushButton()
     {
-        //v.1
-        /*linSlide.setPower(-.5f);
-        sleep(1600);
-        linSlide.setPower(.5f);
-        sleep(1600);
-        linSlide.setPower(0);*/
-        //v.2
-        float range = (float)USensor.cmUltrasonic();
-        if(range < 13) {
-            linearSlider(-range / 2.54, .5f);
-            linearSlider(range / 2.54, .5f);
-        }
-    }
-    public void linearSlider(double distance, float speed)
-    {
-        double ticksToInches = (ENCODERTICKS * 2) / (3.0/16*Math.PI);
-        int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
 
-        linSlide.setTargetPosition(PositionTarget1);
-        linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        linSlide.setPower(speed);
-        while (linSlide.isBusy() && opModeIsActive()) {
-            telemetry.addData("angle",
-                    MrGyro.getHeading());
+        linSlide.setPower(-.5f);
+        sleep(2000);
+        linSlide.setPower(.5f);
+        sleep(2000);
+        linSlide.setPower(0);
+
+
+    }
+
+    public void moveRobotTest(double distance, float speed) {
+        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
+        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
+        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
+
+       // motorLeftBack.setTargetPosition(PositionTarget1);
+        motorRightFront.setTargetPosition(PositionTarget2);
+        //motorRightBack.setTargetPosition(PositionTarget3);
+        motorLeftFront.setTargetPosition(PositionTarget4);
+
+        motorLeftFront.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
+        motorRightFront.setMode
+                (DcMotor.RunMode.RUN_TO_POSITION
+                );
+        setMotorSpeed(speed);
+        if(distance < 0)
+        {
+            motorRightBack.setPower(-speed);
+            motorLeftBack.setPower(-speed);
+        }
+        while (motorLeftFront.isBusy() && motorRightFront.isBusy()) {
+            telemetry.addData("tickLeftFront", motorLeftFront.getCurrentPosition());
+            telemetry.addData("tickLeftBack", motorLeftBack.getCurrentPosition());
+            telemetry.addData("tickRightFront", motorRightFront.getCurrentPosition());
+            telemetry.addData("tickRightBack", motorRightBack.getCurrentPosition());
 
             telemetry.update();
         }
-        linSlide.setPower(0);
-        linSlide.setMode
-                (DcMotor.RunMode.RUN_USING_ENCODER
-                );
+        setMotorSpeed(0);
+        runEncoders();
     }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
@@ -312,9 +328,11 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
 
         SetEncoderPositionToRun();
         setMotorSpeed(speed);
-        while (motorLeftFront.isBusy()) {
-            telemetry.addData("angle",
-                    MrGyro.getHeading());
+        while (motorLeftFront.isBusy() && motorRightFront.isBusy() && motorLeftBack.isBusy() && motorRightBack.isBusy()) {
+            telemetry.addData("tickLeftFront", motorLeftFront.getCurrentPosition());
+            telemetry.addData("tickLeftBack", motorLeftBack.getCurrentPosition());
+            telemetry.addData("tickRightFront", motorRightFront.getCurrentPosition());
+            telemetry.addData("tickRightBack", motorRightBack.getCurrentPosition());
 
             telemetry.update();
         }

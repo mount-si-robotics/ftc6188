@@ -49,6 +49,8 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -143,7 +145,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         {
         }
         //set up the robot depending on the situation
-        /*FtcValueMenu menu = new FtcValueMenu("Alliance Blue: ", null, this, -1, 1, 2, -1, "%.2");
+        FtcValueMenu menu = new FtcValueMenu("Alliance Blue: ", null, this, -1, 1, 2, -1, "%.2f");
         FtcValueMenu menu2 = new FtcValueMenu("Position Far: ", menu, this, -1,1,2,-1,"%.2f");
         menu2.setChildMenu(menu2);
         FtcValueMenu menu3 = new FtcValueMenu("Cap Ball: ", menu2, this, -1,1,2,-1,"%.2f");
@@ -161,7 +163,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         if(menu3.getCurrentValue() == 1)
             goCapBall = true;
         if(menu4.getCurrentValue() == 1)
-            goBeacons = true;*/
+            goBeacons = true;
 
         while (!isStarted()) {
             telemetry.addData("Angle ", MrGyro.getHeading());
@@ -183,7 +185,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         else
          */
         //moves the robot 52 inches at 20% power
-        moveRobot2(67.5 * alliance,.3f);
+        moveRobot2(67 * alliance,.3f);
         //turns robot to 70 degrees at 10% power and 0 tolerance
         //turnUsingRightMotors(80,.1f,0);
         //move robot 6 inches backwards at 10% power
@@ -191,63 +193,106 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         //turn robot 45 degrees at 5% power and 0 tolerance
         turnUsingRightMotors(PARALLELCLOSE,.07f,0);
         if (alliance == 1)
-            searchForWhiteLine(-.1f * alliance, optFront);
-        else
+        {
             searchForWhiteLine(-.1f * alliance, optBack);
-        //search for white line using optical distance sensor at 10% power
-        for(int i = 0; i < 2; i++) {
-            //searches for white line at 10% power with the back or front optical distance sensor depending on alliance
-            if(i == 1) {
-                if (alliance == 1)
-                    searchForWhiteLine(.1f * alliance, optFront);
-                else
-                    searchForWhiteLine(.1f * alliance, optBack);
-            }
-           if (alliance == 1)
-            {
-                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                if(hsvValues[0] > 150)
-                    pushButton();
-                else
-                {
-                    //searches for white line at 10% power with the front optical distance sensor
-                    searchForWhiteLine(.1f * alliance, optFront);
-                    pushButton();
-                }
-                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                if (hsvValues[0] < 150) {
-                    sleep(3000);
-                    pushButton();
-                }
-            }
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if(hsvValues[0] > 150 && hsvValues[0] < 320)
+                pushButton();
             else
             {
-                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                DbgLog.msg("1 %.2f",hsvValues[0]);
-                sleep(500);
-                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                DbgLog.msg("2 %.2f",hsvValues[0]);
-                if(hsvValues[0] < 150)
-                  pushButton();
-                else
-                {
-                    //searches for white line at 10% power with the front optical distance sensor
-                    searchForWhiteLine(.1f * alliance, optFront);
-                    pushButton();
-                }
-                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-                DbgLog.msg("3 %.2f",hsvValues[0]);
-                if (hsvValues[0] > 150)
-                {
-                    sleep(3000);
-                    pushButton();
-                }
+                //searches for white line at 10% power with the front optical distance sensor
+                searchForWhiteLine(.1f * alliance, optFront);
+                pushButton();
             }
-            //moves robot 27 inches at 20% power at 45 degrees in the first iteration
-            if(i == 0) {
-                moveRobot2(27 * alliance, .3f, 37);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if (hsvValues[0] < 150 || hsvValues[0] > 320) {
+                sleep(3000);
+                pushButton();
             }
         }
+        else
+        {
+            searchForWhiteLine(-.1f * alliance, optFront);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("1 %.2f",hsvValues[0]);
+            sleep(500);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("2 %.2f",hsvValues[0] );
+            if(hsvValues[0] < 150 || hsvValues[0] > 320)
+                pushButton();
+            else
+            {
+                //searches for white line at 10% power with the front optical distance sensor
+
+                searchForWhiteLine(-.1f * alliance, optBack);
+                pushButton();
+            }
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("3 %.2f",hsvValues[0]);
+            if (hsvValues[0] > 150 && hsvValues[0] < 320)
+            {
+                sleep(3000);
+                pushButton();
+            }
+        }
+        //search for white line using optical distance sensor at 10% power
+
+            //searches for white line at 10% power with the back or front optical distance sensor depending on alliance
+        /*moveRobot2(4 * alliance, .3f);
+        if(alliance == 1)
+            driveFollowWall(.3f * alliance,14,optFront);
+        else
+            driveFollowWall(.3f * alliance,14,optBack);*/
+
+        moveRobot2(27 * alliance, .3f, 35);
+        if (alliance == 1)
+        {
+            searchForWhiteLine(.1f * alliance, optFront);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if(hsvValues[0] > 150 && hsvValues[0] < 320)
+                pushButton();
+            else
+            {
+                //searches for white line at 10% power with the front optical distance sensor
+                searchForWhiteLine(.1f * alliance, optFront);
+                pushButton();
+            }
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            if (hsvValues[0] < 150 || hsvValues[0] > 320) {
+                sleep(3200);
+                pushButton();
+            }
+        }
+
+        else
+        {
+            searchForWhiteLine(.1f * alliance, optBack);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("1 %.2f",hsvValues[0]);
+            sleep(500);
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("2 %.2f",hsvValues[0] );
+            if(hsvValues[0] < 150 || hsvValues[0] > 320)
+                pushButton();
+            else
+            {
+                //searches for white line at 10% power with the front optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optFront);
+                pushButton();
+            }
+            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+            DbgLog.msg("3 %.2f",hsvValues[0]);
+            if (hsvValues[0] > 150 && hsvValues[0] < 320)
+            {
+                sleep(3200);
+                pushButton();
+            }
+        }
+
+
+
+            //moves robot 27 inches at 20% power at 45 degrees in the first iteration
+
 
 
         //moves robot 18 inches at 20% at 45 degrees
@@ -259,6 +304,60 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
             moveRobot2(60,.2f);
         }*/
         turnOffLight();
+
+    }
+    void driveFollowWall(float speed, double wallDistance, OpticalDistanceSensor opt) {
+        // TODO: NOT TESTED
+        String functionName = "driveFollowWallDistance";
+        double correction = 0.1;
+        double timeout = 5.0;
+        double startTime = runtime.seconds();
+        double currDistance = 0;
+        double leftPower = speed;
+        double rightPower = speed;
+        int tollerance = 1;
+
+
+        setMotorSpeed(speed);
+
+        while(opModeIsActive() && ((runtime.seconds() - startTime) < timeout) && opt.getRawLightDetected() < .50) {
+            correction = wallDistance - USensor.getDistance(DistanceUnit.CM);
+            if (correction <  0) {
+                // Too far away
+
+                    leftPower = speed;
+                    rightPower = speed + .05; // Increase right motor to turn towards wall
+
+            }
+            else {
+
+                    leftPower = speed + .05;
+                    rightPower = speed;
+
+            }
+            if(speed > 0)
+            {
+                motorLeftFront.setPower(rightPower);
+                motorLeftBack.setPower(rightPower);
+                motorRightBack.setPower(leftPower);
+                motorRightFront.setPower(leftPower);
+            }
+            else
+            {
+                motorLeftFront.setPower(leftPower);
+                motorLeftBack.setPower(leftPower);
+                motorRightBack.setPower(rightPower);
+                motorRightFront.setPower(rightPower);
+            }
+            DbgLog.msg("distance %.2f",USensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("distance cm:",USensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("LeftFront speed", motorLeftFront.getPower());
+            telemetry.addData("RightFront speed",motorRightFront.getPower());
+            telemetry.update();
+        }
+
+        setMotorSpeed(0);
+
 
     }
     public void turnOffLight()
@@ -276,50 +375,15 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     public void pushButton()
     {
 
-        linSlide.setPower(-.5f);
-        sleep(2000);
-        linSlide.setPower(.5f);
-        sleep(2000);
+        linSlide.setPower(-.75f);
+        sleep(1800);
+        linSlide.setPower(.75f);
+        sleep(1800);
         linSlide.setPower(0);
 
 
     }
 
-    public void moveRobotTest(double distance, float speed) {
-        double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
-        int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
-        int PositionTarget2 = motorRightFront.getCurrentPosition() + (int) (distance * ticksToInches);
-        int PositionTarget3 = motorRightBack.getCurrentPosition() + (int) (distance * ticksToInches);
-        int PositionTarget4 = motorLeftFront.getCurrentPosition() + (int) (distance * ticksToInches);
-
-       // motorLeftBack.setTargetPosition(PositionTarget1);
-        motorRightFront.setTargetPosition(PositionTarget2);
-        //motorRightBack.setTargetPosition(PositionTarget3);
-        motorLeftFront.setTargetPosition(PositionTarget4);
-
-        motorLeftFront.setMode
-                (DcMotor.RunMode.RUN_TO_POSITION
-                );
-        motorRightFront.setMode
-                (DcMotor.RunMode.RUN_TO_POSITION
-                );
-        setMotorSpeed(speed);
-        if(distance < 0)
-        {
-            motorRightBack.setPower(-speed);
-            motorLeftBack.setPower(-speed);
-        }
-        while (motorLeftFront.isBusy() && motorRightFront.isBusy()) {
-            telemetry.addData("tickLeftFront", motorLeftFront.getCurrentPosition());
-            telemetry.addData("tickLeftBack", motorLeftBack.getCurrentPosition());
-            telemetry.addData("tickRightFront", motorRightFront.getCurrentPosition());
-            telemetry.addData("tickRightBack", motorRightBack.getCurrentPosition());
-
-            telemetry.update();
-        }
-        setMotorSpeed(0);
-        runEncoders();
-    }
     public void moveRobot(double distance, float speed) {
         double ticksToInches = (ENCODERTICKS * GEARRATIO) / CIRCUMFENCE;
         int PositionTarget1 = motorLeftBack.getCurrentPosition() + (int) (distance * ticksToInches);
@@ -509,7 +573,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         int tollerance = 1;
         double startTime = runtime.time();
 
-        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +6 && opModeIsActive()) {
+        while(Math.abs(currentheading - degrees) > tollerance && runtime.time() < startTime +4.5 && opModeIsActive()) {
             currentheading = -MrGyro.getIntegratedZValue();
             if(Math.abs(degrees - currentheading) <25)
                 speed  = .07f;
@@ -593,23 +657,22 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         motorLeftBack.setPower(speed);
     }
 
-    @Override
     public boolean isMenuUpButton() {
-        return false;
+        return gamepad1.dpad_up;
     }
 
     @Override
     public boolean isMenuDownButton() {
-        return false;
+        return gamepad1.dpad_down;
     }
 
     @Override
     public boolean isMenuEnterButton() {
-        return false;
+        return gamepad1.dpad_right;
     }
 
     @Override
     public boolean isMenuBackButton() {
-        return false;
+        return gamepad1.dpad_left;
     }
 }

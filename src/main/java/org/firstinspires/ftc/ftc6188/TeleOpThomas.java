@@ -72,8 +72,8 @@ public class TeleOpThomas extends OpMode
     private DcMotor motorLeftFront;
     private DcMotor ballLauncher;
     private DcMotor linSlide;
-    /*private DcMotor lift1;
-    private DcMotor lift2;*/
+    private DcMotor lift1;
+    private DcMotor lift2;
 
 
     private ModernRoboticsI2cRangeSensor USensor;
@@ -99,8 +99,8 @@ public class TeleOpThomas extends OpMode
         ballLauncher = hardwareMap.dcMotor.get("Launcher");
         linSlide = hardwareMap.dcMotor.get("linSlide");
 
-        /*lift1 = hardwareMap.dcMotor.get("Lift1");
-        lift2 = hardwareMap.dcMotor.get("Lift2");*/
+        lift1 = hardwareMap.dcMotor.get("Lift1");
+        lift2 = hardwareMap.dcMotor.get("Lift2");
 
         motorLeftBack.setDirection(DcMotor.Direction.REVERSE);
         motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
@@ -121,7 +121,7 @@ public class TeleOpThomas extends OpMode
         motorRightBack.setDirection(DcMotor.Direction.FORWARD);
         motorRightFront.setDirection(DcMotor.Direction.FORWARD);
 
-        linSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        linSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         turnOffLight();
     }
@@ -140,6 +140,8 @@ public class TeleOpThomas extends OpMode
     @Override
     public void loop() {
         telemetry.addData("Status", "Running: " + runtime.toString());
+        telemetry.addData("ticks",linSlide.getCurrentPosition());
+        telemetry.addData("distance cm",USensor.cmUltrasonic());
         float left;
         float right;
 
@@ -154,34 +156,25 @@ public class TeleOpThomas extends OpMode
             linSlide.setPower(-.5);
         else
             linSlide.setPower(0);
-        if(gamepad1.x)
-        {
-            searchForWhiteLine(.2f,optFront);
-            pushButton();
-        }
-        else if(gamepad1.y)
-        {
-            searchForWhiteLine(-.2f,optBack);
-            pushButton();
-        }
 
-        /*if(gamepad1.dpad_up) {
-            liftMotor1.setPower(.1f);
-            liftMotor2.setPower(.1f);
+
+        if(gamepad1.dpad_up) {
+            lift1.setPower(.1f);
+            lift2.setPower(.1f);
         }
         else if (gamepad1.dpad_down)
         {
-            liftMotor1.setPower(-.1f);
-            liftMotor2.setPower(-.1f);
+            lift1.setPower(-.1f);
+            lift2.setPower(-.1f);
         }
         else
         {
-            liftMotor1.setPower(0);
-            liftMotor2.setPower(0);
+            lift1.setPower(0);
+            lift2.setPower(0);
         }
-        telemetry.addData("inches motorLift1: ",liftMotor1.getCurrentPosition() / (1120 / (2.5 * Math.PI));
-        telemetry.addData("inches motorLift2: ",liftMotor2.getCurrentPosition() / (1120 / (2.5 * Math.PI));
-        telemetry.update();*/
+        telemetry.addData("inches motorLift1: ",lift1.getCurrentPosition() / (1120 / (2.5 * Math.PI)));
+        telemetry.addData("inches motorLift2: ",lift2.getCurrentPosition() / (1120 / (2.5 * Math.PI)));
+        telemetry.update();
 
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
@@ -230,66 +223,6 @@ public class TeleOpThomas extends OpMode
         cdim.setDigitalChannelState(7, false);
 
     }
-    public void pushButton()
-    {
-        //v.1
-        /*linSlide.setPower(-.5f);
-        sleep(1600);
-        linSlide.setPower(.5f);
-        sleep(1600);
-        linSlide.setPower(0);*/
-        //v.2
-        float range = (float)USensor.cmUltrasonic();
-        if(range < 13) {
-            linearSlider(-range / 2.54, .5f);
-            linearSlider(range / 2.54, .5f);
-        }
-        telemetry.addData("distance",range);
-        telemetry.update();
-    }
-    public boolean buttonsPressed()
-    {
-        return gamepad1.x && gamepad1.y && gamepad1.a && gamepad1.b && gamepad1.atRest() &&
-                gamepad1.dpad_down && gamepad1.dpad_right && gamepad1.dpad_up && gamepad1.dpad_left &&
-                 gamepad1.left_bumper && gamepad1.right_bumper;
-    }
-    public void linearSlider(double distance, float speed)
-    {
-        double ticksToInches = (1120 * 2) / (3.0/16*Math.PI);
-        int PositionTarget1 = linSlide.getCurrentPosition() + (int) (distance * ticksToInches);
 
-        linSlide.setTargetPosition(PositionTarget1);
-        linSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        linSlide.setPower(speed);
-        while (linSlide.isBusy() && !buttonsPressed()) {
-            telemetry.addData("ticks",
-                    linSlide.getCurrentPosition());
 
-            telemetry.update();
-        }
-        linSlide.setPower(0);
-        linSlide.setMode
-                (DcMotor.RunMode.RUN_USING_ENCODER
-                );
-    }
-    public void searchForWhiteLine(float speed, OpticalDistanceSensor optSensor)
-    {
-        double startTime = runtime.time();
-        motorLeftBack.setPower(speed);
-        motorLeftFront.setPower(speed);
-        motorRightBack.setPower(speed);
-        motorRightFront.setPower(speed);
-        while(optSensor.getRawLightDetected() < .5
-                && runtime.time() < startTime +4 && !buttonsPressed())
-        {
-            telemetry.addData("lightBack", optSensor.getRawLightDetected());
-        }
-        motorLeftBack.setPower(0);
-        motorLeftFront.setPower(0);
-        motorRightBack.setPower(0);
-        motorRightFront.setPower(0);
-        g
-        it commit -m "updates to menu and teleop"
-
-    }
 }

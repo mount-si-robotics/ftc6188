@@ -159,13 +159,13 @@ public class TeleOpThomas extends OpMode
 
 
         if(gamepad1.dpad_up) {
-            lift1.setPower(.1f);
-            lift2.setPower(.1f);
+            lift1.setPower(-.5f);
+            lift2.setPower(-.5f);
         }
         else if (gamepad1.dpad_down)
         {
-            lift1.setPower(-.1f);
-            lift2.setPower(-.1f);
+            lift1.setPower(.5f);
+            lift2.setPower(.5f);
         }
         else
         {

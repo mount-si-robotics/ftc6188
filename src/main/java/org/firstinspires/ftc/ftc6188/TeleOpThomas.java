@@ -159,21 +159,21 @@ public class TeleOpThomas extends OpMode
 
 
         if(gamepad1.dpad_up) {
-            lift1.setPower(-.5f);
-            lift2.setPower(-.5f);
+            lift1.setPower(-.75f);
+            lift2.setPower(-.75f);
         }
-        else if (gamepad1.dpad_down)
+        else if (gamepad1.dpad_down && lift1.getCurrentPosition() <= -5 && lift2.getCurrentPosition() <= -5)
         {
-            lift1.setPower(.5f);
-            lift2.setPower(.5f);
+            lift1.setPower(.02f);
+            lift2.setPower(.02f);
         }
         else
         {
             lift1.setPower(0);
             lift2.setPower(0);
         }
-        telemetry.addData("inches motorLift1: ",lift1.getCurrentPosition() / (1120 / (2.5 * Math.PI)));
-        telemetry.addData("inches motorLift2: ",lift2.getCurrentPosition() / (1120 / (2.5 * Math.PI)));
+        telemetry.addData("inches motorLift1: ",lift1.getCurrentPosition());
+        telemetry.addData("inches motorLift2: ",lift2.getCurrentPosition());
         telemetry.update();
 
         left = -gamepad1.left_stick_y;

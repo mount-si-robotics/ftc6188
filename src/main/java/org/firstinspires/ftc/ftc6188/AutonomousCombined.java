@@ -193,7 +193,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
 
         //turns robot parallel to wall
         if(alliance == 1)
-            turnUsingLeftMotors(PARALLELCLOSE,.08f,0);
+            turnUsingLeftMotors(PARALLELCLOSE+2,.08f,0);
         else
             turnUsingRightMotors(PARALLELCLOSE,.08f,0);
         if (alliance == 1)

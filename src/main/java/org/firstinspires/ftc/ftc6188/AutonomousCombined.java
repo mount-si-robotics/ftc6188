@@ -77,7 +77,7 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
     boolean shoot = false;
     boolean goCapBall = false;
     boolean parkCenter = false;
-    boolean goBeacons = false;
+    boolean goBeacons = true;
     int delay = 0;
     private int PARALLELCLOSE = 35;
 
@@ -146,30 +146,22 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         }
         //set up the robot depending on the situation
         FtcValueMenu menu = new FtcValueMenu("Alliance Blue: ", null, this, -1, 1, 2, -1, "%.2f");
-        FtcValueMenu menu2 = new FtcValueMenu("Position Far: ", menu, this, -1,1,2,-1,"%.2f");
-        menu2.setChildMenu(menu2);
-        FtcValueMenu menu3 = new FtcValueMenu("Cap Ball: ", menu2, this, -1,1,2,-1,"%.2f");
+        FtcValueMenu menu2 = new FtcValueMenu("Beacons: ", menu, this, -1,1,2,1,"%.2f");
+        menu.setChildMenu(menu2);
+        FtcValueMenu menu3 = new FtcValueMenu("Delay seconds: ", menu2, this, 0,15,.5,0, "%.2f");
         menu2.setChildMenu(menu3);
-        FtcValueMenu menu4 = new FtcValueMenu("Beacons: ", menu3, this, -1,1,2,-1,"%.2f");
-        menu2.setChildMenu(menu4);
-        FtcValueMenu menu5 = new FtcValueMenu("Delay seconds: ", menu4, this, 0,15,.5,0, "%.2f");
-        menu.setChildMenu(menu5);
         FtcMenu.setOpMode(this);
         FtcMenu.walkMenuTree(menu);
         alliance =(int) menu.getCurrentValue();
-        delay = (int)(menu5.getCurrentValue() * 1000);
-        if(menu2.getCurrentValue() == 1)
-            isFar = true;
-        if(menu3.getCurrentValue() == 1)
-            goCapBall = true;
-        if(menu4.getCurrentValue() == 1)
-            goBeacons = true;
+        delay = (int)(menu3.getCurrentValue() * 1000);
+        if(menu2.getCurrentValue() == -1)
+            goBeacons = false;
 
         while (!isStarted()) {
             telemetry.addData("Angle ", MrGyro.getHeading());
             telemetry.addData("Alliance ",alliance);
-            telemetry.addData("Start Pos Far ", isFar);
-            telemetry.addData("Cap Ball at End of Beacons", goCapBall);
+            //telemetry.addData("Start Pos Far ", isFar);
+            //telemetry.addData("Cap Ball at End of Beacons", goCapBall);
             telemetry.addData("beacons over Cap at start",goBeacons);
             telemetry.addData("Delay ", delay/1000 + " seconds");
             telemetry.update();
@@ -177,118 +169,105 @@ public class AutonomousCombined extends LinearOpMode implements FtcMenu.MenuButt
         runtime.reset();
         MrGyro.resetZAxisIntegrator();
         sleep(delay);
-        /*
-        if(!goBeacons)
+
+        if(goBeacons)
+        {
+            //sets the angle to be parallel with the wall depending on alliance
+            if (alliance == 1)
+                PARALLELCLOSE = -PARALLELCLOSE;
+
+            //move robot 67 inches at 40% power
+            moveRobot2(67 * alliance, .3f);
+
+            //turns robot parallel to wall
+            if (alliance == 1)
+                turnUsingLeftMotors(PARALLELCLOSE + 2, .08f, 0);
+            else
+                turnUsingRightMotors(PARALLELCLOSE, .08f, 0);
+            if (alliance == 1) {
+                //searches for white line at 10% power with the front optical distance sensor
+                searchForWhiteLine(-.1f * alliance, optFront);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                sleep(500);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] > 150 && hsvValues[0] < 320)
+                    pushButton();
+                else {
+                    //searches for white line at 10% power with the back optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optBack);
+                    pushButton();
+                }
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] < 150 || hsvValues[0] > 320) {
+                    sleep(3700);
+                    pushButton();
+                }
+            } else {
+                //searches for white line at 10% power with the front optical distance sensor
+                searchForWhiteLine(-.1f * alliance, optFront);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("1 %.2f", hsvValues[0]);
+                sleep(500);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("2 %.2f", hsvValues[0]);
+                if (hsvValues[0] < 150 || hsvValues[0] > 320)
+                    pushButton();
+                else {
+                    //searches for white line at 10% power with the baack optical distance sensor
+                    searchForWhiteLine(-.1f * alliance, optBack);
+                    pushButton();
+                }
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                DbgLog.msg("3 %.2f", hsvValues[0]);
+                if (hsvValues[0] > 150 && hsvValues[0] < 320) {
+                    sleep(3700);
+                    pushButton();
+                }
+            }
+            //moves robot 30 inches at 30% power at parallel to wall
+            moveRobot2(30 * alliance, .3f, PARALLELCLOSE);
+            if (alliance == 1) {
+                //searches for white line at 10% power with the front optical distance sensor
+                searchForWhiteLine(.1f * alliance, optFront);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                sleep(500);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] > 150 && hsvValues[0] < 320)
+                    pushButton();
+                else {
+                    //searches for white line at 10% power with the back optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optBack);
+                    pushButton();
+                }
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] < 150 || hsvValues[0] > 320) {
+                    sleep(3700);
+                    pushButton();
+                }
+            } else {
+                //searches for white line at 10% power with the back optical distance sensor
+                searchForWhiteLine(.1f * alliance, optBack);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                sleep(500);
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] < 150 || hsvValues[0] > 320)
+                    pushButton();
+                else {
+                    //searches for white line at 10% power with the front optical distance sensor
+                    searchForWhiteLine(.1f * alliance, optFront);
+                    pushButton();
+                }
+                Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
+                if (hsvValues[0] > 150 && hsvValues[0] < 320) {
+                    sleep(3700);
+                    pushButton();
+                }
+            }
+        }
+        else
         {
             moveRobot2(68,.2f);
         }
-        else
-         */
-        //sets the angle to be parallel with the wall depending on alliance
-        if(alliance == 1)
-            PARALLELCLOSE = -PARALLELCLOSE;
-
-        //move robot 67 inches at 40% power
-        moveRobot2(67 * alliance,.3f);
-
-        //turns robot parallel to wall
-        if(alliance == 1)
-            turnUsingLeftMotors(PARALLELCLOSE+2,.08f,0);
-        else
-            turnUsingRightMotors(PARALLELCLOSE,.08f,0);
-        if (alliance == 1)
-        {
-            //searches for white line at 10% power with the front optical distance sensor
-            searchForWhiteLine(-.1f * alliance, optFront);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            sleep(500);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] > 150 && hsvValues[0] < 320)
-                pushButton();
-            else
-            {
-                //searches for white line at 10% power with the back optical distance sensor
-                searchForWhiteLine(.1f * alliance, optBack);
-                pushButton();
-            }
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if (hsvValues[0] < 150 || hsvValues[0] > 320) {
-                sleep(3700);
-                pushButton();
-            }
-        }
-        else
-        {
-            //searches for white line at 10% power with the front optical distance sensor
-            searchForWhiteLine(-.1f * alliance, optFront);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            DbgLog.msg("1 %.2f",hsvValues[0]);
-            sleep(500);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            DbgLog.msg("2 %.2f",hsvValues[0] );
-            if(hsvValues[0] < 150 || hsvValues[0] > 320)
-                pushButton();
-            else
-            {
-                //searches for white line at 10% power with the baack optical distance sensor
-                searchForWhiteLine(-.1f * alliance, optBack);
-                pushButton();
-            }
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            DbgLog.msg("3 %.2f",hsvValues[0]);
-            if (hsvValues[0] > 150 && hsvValues[0] < 320)
-            {
-                sleep(3700);
-                pushButton();
-            }
-        }
-        //moves robot 30 inches at 30% power at parallel to wall
-        moveRobot2(30 * alliance, .3f, PARALLELCLOSE);
-        if (alliance == 1)
-        {
-            //searches for white line at 10% power with the front optical distance sensor
-            searchForWhiteLine(.1f * alliance, optFront);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            sleep(500);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] > 150 && hsvValues[0] < 320)
-                pushButton();
-            else
-            {
-                //searches for white line at 10% power with the back optical distance sensor
-                searchForWhiteLine(.1f * alliance, optBack);
-                pushButton();
-            }
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if (hsvValues[0] < 150 || hsvValues[0] > 320) {
-                sleep(3700);
-                pushButton();
-            }
-        }
-
-        else
-        {
-            //searches for white line at 10% power with the back optical distance sensor
-            searchForWhiteLine(.1f * alliance, optBack);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            sleep(500);
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if(hsvValues[0] < 150 || hsvValues[0] > 320)
-                pushButton();
-            else
-            {
-                //searches for white line at 10% power with the front optical distance sensor
-                searchForWhiteLine(.1f * alliance, optFront);
-                pushButton();
-            }
-            Color.RGBToHSV((adafruitColor.red() * 255) / 800, (adafruitColor.green() * 255) / 800, (adafruitColor.blue() * 255) / 800, hsvValues);
-            if (hsvValues[0] > 150 && hsvValues[0] < 320)
-            {
-                sleep(3700);
-                pushButton();
-            }
-        }
-
         //moves robot 18 inches at 20% at 45 degrees
         //moveRobot2(18 * alliance,.2f,35);
         //turns robot to 0 degrees at 10%power

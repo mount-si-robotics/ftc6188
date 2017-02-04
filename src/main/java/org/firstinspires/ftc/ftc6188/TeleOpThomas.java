@@ -187,8 +187,8 @@ public class TeleOpThomas extends OpMode
 
         if(gamepad1.left_trigger > 0.25)
         {
-            right/=4;
-            left/=4;
+            right/=3;
+            left/=3;
         }
         motorRightFront.setPower(right);
         motorLeftFront.setPower(left);

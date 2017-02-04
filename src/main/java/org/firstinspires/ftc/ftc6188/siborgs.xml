@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <MotorController name="Motor Controller 1" serialNumber="AL00VEA6">
+        <Motor name="linSlide" port="1" />
+        <Motor name="Launcher" port="2" />
+    </MotorController>
+    <MotorController name="Motor Controller 2" serialNumber="AL00VI0J">
+        <Motor name="LFMotor" port="1" />
+        <Motor name="RFMotor" port="2" />
+    </MotorController>
+    <DeviceInterfaceModule name="cdim" serialNumber="AL00XL89">
+        <Gyro name="GSensor" port="0" />
+        <AdafruitColorSensor name="MRCSensor" port="1" />
+        <ModernRoboticsI2cRangeSensor name="USensor" port="2" />
+        <OpticalDistanceSensor name="ODSensorFront" port="1" />
+        <OpticalDistanceSensor name="ODSensorBack" port="2" />
+    </DeviceInterfaceModule>
+    <MotorController name="Motor Controller 3" serialNumber="AL00VI3T">
+        <Motor name="RBMotor" port="1" />
+        <Motor name="LBMotor" port="2" />
+    </MotorController>
+    <MotorController name="Motor Controller 4" serialNumber="AL00VI0E">
+        <Motor name="Lift1" port="1" />
+        <Motor name="Lift2" port="2" />
+    </MotorController>
+</Robot>
